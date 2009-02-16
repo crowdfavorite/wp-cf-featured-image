@@ -109,7 +109,7 @@ function cffp_admin_head() {
 	$cffp_areas = apply_filters('cffp_add_areas',$cffp_areas);
 
 	echo '<link rel="stylesheet" type="text/css" href="'.trailingslashit(get_bloginfo('url')).'index.php?cf_action=cffp_admin_css" />';
-
+	
 	foreach($cffp_areas as $key => $area) {
 		$area_id = sanitize_title('cffp-'.$key);
 		add_meta_box($area_id, htmlspecialchars($area['name']), 'cffp_edit_post', 'post', 'normal', 'high');
@@ -129,35 +129,39 @@ function cffp_edit_post($post,$area) {
 	$cffp_att_id = get_post_meta($post->ID,$cffp_id,true);
 	$post_imgs = cffp_get_img_attachments('= '.$post->ID,$cffp_att_id,$cffp_id);
 	$other_imgs = cffp_get_img_attachments('< 0',$cffp_att_id,$cffp_id);
+	
+	if($cffp_att_id == 'NULL' || $cffp_att_id == '') {
+		$noimg_checked = ' checked="checked"';
+		$noimg_selected = ' cffp_selected';
+	}
+	else {
+		$noimg_checked = '';
+		$noimg_selected = '';
+	}
+	
+	$container_width = ($post_imgs['count'] + $other_imgs['count'] + 1) * 170;
+	
 	print('
 	<div class="cffp_help">
 		<p>'.$cffp_description.'</p>
 		<p><em>'.__('To add new images, upload them via the Media Gallery. Refresh your browser after uploading to see new images.').'</em></p>
 	</div>
 	<div class="cffp_overall">
-		<div class="cffp_images">
-	');
-	if(!empty($post_imgs) && $post->ID != 0) {
-		echo $post_imgs;
-	}
-	if(!empty($other_imgs)) {
-		echo $other_imgs;
-	}
-	if($cffp_att_id == 'NULL' || $cffp_att_id == '') {
-		$checked = ' checked="checked"';
-		$selected = ' cffp_selected';
-	}
-	else {
-		$checked = '';
-		$selected = '';
-	}
-	print('
-			<div class="cffp_container'.$selected.'">
+		<div class="cffp_images" style="width:'.$container_width.'px;">
+			<div class="cffp_container'.$noimg_selected.'">
 				<label class="cffp_img" for="cffp-'.$cffp_id.'-leadimg-0">'.__('No Image').'</label>
 				<div class="cffp_radio">
-					<input type="radio" name="cffp['.$cffp_id.']" id="cffp-'.$cffp_id.'-leadimg-0" value="NULL"'.$checked.' />
+					<input type="radio" name="cffp['.$cffp_id.']" id="cffp-'.$cffp_id.'-leadimg-0" value="NULL"'.$noimg_checked.' />
 				</div>
 			</div>
+			');
+			if(!empty($post_imgs) && $post->ID != 0) {
+				echo $post_imgs['html'];
+			}
+			if(!empty($other_imgs)) {
+				echo $other_imgs['html'];
+			}
+			print('
 		</div>
 	</div>
 	<div class="cffp_clear"></div>
@@ -167,8 +171,10 @@ function cffp_edit_post($post,$area) {
 function cffp_get_img_attachments($id_string,$cffp_att_id,$cffp_id) {
 	global $wpdb;
 	$return = '';
+	$count = 0;
 	$cffp_attachments = $wpdb->get_results("SELECT * FROM $wpdb->posts WHERE post_type LIKE 'attachment' AND post_mime_type LIKE 'image%' AND post_parent $id_string", ARRAY_A);
 	if(count($cffp_attachments)) {
+		$count = count($cffp_attachments);
 		foreach($cffp_attachments as $cffp_attachment) {
 			if($cffp_att_id == $cffp_attachment['ID']) {
 				$checked = ' checked="checked"';
@@ -192,7 +198,7 @@ function cffp_get_img_attachments($id_string,$cffp_att_id,$cffp_id) {
 		}
 		
 	}
-	return $return;
+	return array('html' => $return, 'count' => $count);
 }
 
 function cffp_display($area = '') {
