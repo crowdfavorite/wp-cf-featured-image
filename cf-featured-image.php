@@ -130,7 +130,7 @@ function cffp_edit_post($post,$area) {
 	$post_imgs = cffp_get_img_attachments('= '.$post->ID,$cffp_att_id,$cffp_id);
 	$other_imgs = cffp_get_img_attachments('< 0',$cffp_att_id,$cffp_id);
 	
-	if($cffp_att_id == 'NULL' || $cffp_att_id == '') {
+	if ($cffp_att_id == 'NULL' || $cffp_att_id == '') {
 		$noimg_checked = ' checked="checked"';
 		$noimg_selected = ' cffp_selected';
 	}
@@ -155,10 +155,16 @@ function cffp_edit_post($post,$area) {
 				</div>
 			</div>
 			');
-			if(!empty($post_imgs) && $post->ID != 0) {
+			if (!empty($post_imgs['selected']) && $post->ID != 0) {
+				echo $post_imgs['selected'];
+			}
+			if (!empty($other_imgs['selected'])) {
+				echo $other_imgs['selected'];
+			}
+			if (!empty($post_imgs['html']) && $post->ID != 0) {
 				echo $post_imgs['html'];
 			}
-			if(!empty($other_imgs)) {
+			if (!empty($other_imgs['html'])) {
 				echo $other_imgs['html'];
 			}
 			print('
@@ -175,30 +181,39 @@ function cffp_get_img_attachments($id_string,$cffp_att_id,$cffp_id) {
 	$cffp_attachments = $wpdb->get_results("SELECT * FROM $wpdb->posts WHERE post_type LIKE 'attachment' AND post_mime_type LIKE 'image%' AND post_parent $id_string", ARRAY_A);
 	if(count($cffp_attachments)) {
 		$count = count($cffp_attachments);
-		foreach($cffp_attachments as $cffp_attachment) {
-			if($cffp_att_id == $cffp_attachment['ID']) {
-				$checked = ' checked="checked"';
-				$selected = ' cffp_selected';
-			}
-			else {
-				$checked = '';
-				$selected = '';
-			}
+		$selected = '';
+		$return = '';
+		
+		foreach ($cffp_attachments as $cffp_attachment) {
 			$image_link = wp_get_attachment_image_src($cffp_attachment['ID']);
 			$image_meta = get_post_meta($cffp_attachment['ID'],'_wp_attachment_metadata',true);
-			$return .= '
-				<div class="cffp_container'.$selected.'">
-					<label class="cffp_img" style="background: transparent url('.$image_link[0].') no-repeat scroll center center; width: 150px; height: 150px;" for="cffp-'.$cffp_id.'-leadimg-'.$cffp_attachment['ID'].'">
-					</label>
-					<div class="cffp_radio">
-						<input type="radio" name="cffp['.$cffp_id.']" id="cffp-'.$cffp_id.'-leadimg-'.$cffp_attachment['ID'].'" value="'.$cffp_attachment['ID'].'"'.$checked.' />
+
+			if ($cffp_att_id == $cffp_attachment['ID']) {
+				$selected .= '
+					<div class="cffp_container cffp_selected">
+						<label class="cffp_img" style="background: transparent url('.$image_link[0].') no-repeat scroll center center; width: 150px; height: 150px;" for="cffp-'.$cffp_id.'-leadimg-'.$cffp_attachment['ID'].'">
+						</label>
+						<div class="cffp_radio">
+							<input type="radio" name="cffp['.$cffp_id.']" id="cffp-'.$cffp_id.'-leadimg-'.$cffp_attachment['ID'].'" value="'.$cffp_attachment['ID'].'" checked="checked" />
+						</div>
 					</div>
-				</div>
-			';
+				';
+			}
+			else {
+				$return .= '
+					<div class="cffp_container">
+						<label class="cffp_img" style="background: transparent url('.$image_link[0].') no-repeat scroll center center; width: 150px; height: 150px;" for="cffp-'.$cffp_id.'-leadimg-'.$cffp_attachment['ID'].'">
+						</label>
+						<div class="cffp_radio">
+							<input type="radio" name="cffp['.$cffp_id.']" id="cffp-'.$cffp_id.'-leadimg-'.$cffp_attachment['ID'].'" value="'.$cffp_attachment['ID'].'" />
+						</div>
+					</div>
+				';
+			}
 		}
 		
 	}
-	return array('html' => $return, 'count' => $count);
+	return array('html' => $return, 'selected' => $selected, 'count' => $count);
 }
 
 function cffp_display($area = '') {
