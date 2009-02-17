@@ -113,6 +113,7 @@ function cffp_admin_head() {
 	foreach($cffp_areas as $key => $area) {
 		$area_id = sanitize_title('cffp-'.$key);
 		add_meta_box($area_id, htmlspecialchars($area['name']), 'cffp_edit_post', 'post', 'normal', 'high');
+		add_meta_box($area_id, htmlspecialchars($area['name']), 'cffp_edit_post', 'page', 'normal', 'high');
 	}
 }
 add_action('admin_head','cffp_admin_head');
