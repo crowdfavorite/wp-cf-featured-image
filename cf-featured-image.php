@@ -19,17 +19,20 @@ if (!defined('PLUGINDIR')) {
  * Format for areas array
  * 'key' => array(
  *			'name' => 'Name Here', 
- *			'description' => 'Description of the area here'
+ *			'description' => 'Description of the area here',
+ *			'attach_to' => array('post','page')  // defaults to 'post' of not present
  *		)
  */
 $cffp_areas = array(
 		'area1' => array(
 				'name' => 'Area 1',
-				'description' => 'Description of Area 1 here'
+				'description' => 'Description of Area 1 here',
+				'attach_to' => array('post','page') // appear on both posts and pages admin pages
 			),
 		'area2' => array(
 				'name' => 'Area 2',
-				'description' => 'Description of Area 2 here'
+				'description' => 'Description of Area 2 here',
+				'attach_to' => array('post') // appear on only post admin pages
 			),
 );
 
@@ -112,8 +115,12 @@ function cffp_admin_head() {
 	
 	foreach($cffp_areas as $key => $area) {
 		$area_id = sanitize_title('cffp-'.$key);
-		add_meta_box($area_id, htmlspecialchars($area['name']), 'cffp_edit_post', 'post', 'normal', 'high');
-		add_meta_box($area_id, htmlspecialchars($area['name']), 'cffp_edit_post', 'page', 'normal', 'high');
+		if (!is_array($area['attach_to'])) {
+			$area['attach_to'] = array('post');
+		}
+		foreach ($area['attach_to'] as $here) {
+			add_meta_box($area_id, htmlspecialchars($area['name']), 'cffp_edit_post', $here, 'normal', 'high');
+		}		
 	}
 }
 add_action('admin_head','cffp_admin_head');
