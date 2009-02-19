@@ -227,7 +227,7 @@ function cffp_get_img_attachments($id_string,$cffp_att_id,$cffp_id) {
 function cffp_display($area = '') {
 	global $post;
 	if($area != '') {
-		$image = wp_get_attachment_image_src(get_post_meta($post->ID, '_'.$area, true), 'thumbnail');
+		$image = wp_get_attachment_image_src(get_post_meta($post->ID, '_cffp-'.$area, true), 'thumbnail');
 		return $image[0];
 	}
 	return '';
@@ -235,7 +235,7 @@ function cffp_display($area = '') {
 
 function cffp_get_img($post_id = 0, $size = 'thumbnail', $area = '') {
 	if($post_id != 0 && $area != '') {
-		$cffp_image = wp_get_attachment_image_src(get_post_meta($post_id, '_'.$area, true), $size);
+		$cffp_image = wp_get_attachment_image_src(get_post_meta($post_id, '_cffp-'.$area, true), $size);
 		if($cffp_image[0] != '') {
 			return $cffp_image[0];
 		}
@@ -245,7 +245,7 @@ function cffp_get_img($post_id = 0, $size = 'thumbnail', $area = '') {
 
 function cffp_get_img_tag($post_id = 0, $size = 'thumbnail', $area = '') {
 	if($post_id != 0 && $area != '') {
-		$cffp_image = wp_get_attachment_image_src(get_post_meta($post_id, '_'.$area, true), $size);
+		$cffp_image = wp_get_attachment_image_src(get_post_meta($post_id, '_cffp-'.$area, true), $size);
 		if($cffp_image[0] != '') {
 			return '<img src="'.$cffp_image[0].'" alt="featured post image for post id: '.$post_id.'" />';
 		}
