@@ -94,6 +94,7 @@ function cffp_admin_css() {
 	}
 	.cffp_help a {
 		cursor:pointer;
+		padding: 0 10px;
 	}
 	.cffp_type_active {
 		background-color:#21759B;
@@ -256,9 +257,9 @@ function cffp_edit_post($post,$area) {
 	
 	print('
 	<div class="cffp_help">
-		<p>'.$cffp_description.' | <a onclick="cffp_help_text(\''.$cffp_id.'\')"><em>Help</em></a></p>
+		<p>'.$cffp_description.' <a onclick="cffp_help_text(\''.$cffp_id.'\')"><em>Help</em></a></p>
 		<p id="cffp_help_text_'.$cffp_id.'" style="display:none;"><em>'.__('To add new images, upload them via the Media Gallery. Refresh your browser after uploading to see new images.').'</em></p>
-		<p><a id="post-click-'.$cffp_id.'" onclick="cffp_postImgs(\''.$cffp_id.'\')" class="cffp_type_active"> Post Images </a>|<a id="other-click-'.$cffp_id.'" onclick="cffp_otherImgs(\''.$cffp_id.'\',\''.$cffp_att_id.'\')"> Unattached Images </a>|<a id="all-click-'.$cffp_id.'" onclick="cffp_allImgs(\''.$cffp_id.'\',\''.$cffp_att_id.'\')"> All Images </a></p>
+		<p><a id="post-click-'.$cffp_id.'" onclick="cffp_postImgs(\''.$cffp_id.'\')" class="cffp_type_active">Post Images</a><a id="other-click-'.$cffp_id.'" onclick="cffp_otherImgs(\''.$cffp_id.'\',\''.$cffp_att_id.'\')">Unattached Images</a><a id="all-click-'.$cffp_id.'" onclick="cffp_allImgs(\''.$cffp_id.'\',\''.$cffp_att_id.'\')">All Images</a></p>
 	</div>
 	<div class="cffp_overall">
 		<div id="cffp_none" style="width:170px;">
