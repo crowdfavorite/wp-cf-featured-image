@@ -135,6 +135,11 @@ function cffp_admin_css() {
 		float:none;
 		clear:both;
 	}
+	#cffp-ajax-spinner {
+		padding:75px;
+		float:left;
+		text-align:center;
+	}
 	<?php
 	die();
 }
@@ -307,7 +312,6 @@ function cffp_get_images($area, $att_id, $type = 'all') {
 		$imgs = cffp_get_img_attachments('<= 0', $att_id, $area, $type);
 	}
 	$container_width = ($imgs['count'] + 2) * 170;
-
 	print('
 		<div class="cffp_images" style="width:'.$container_width.'px;">
 			');
