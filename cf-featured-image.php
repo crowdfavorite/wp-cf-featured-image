@@ -159,6 +159,7 @@ function cffp_admin_js() {
 	function cffp_otherImgs(area, att_id) {
 		var ajaxSpinner = '<div id="cffp-ajax-spinner"><img src="<?php echo trailingslashit(get_bloginfo('wpurl')); ?>/wp-content/plugins/cf-featured-image/images/ajax-loader.gif" border="0" /><br /><span class="ajax-loading"><?php _e('Loading...','cf-archives'); ?></span></div>';
 		var other_imgs = jQuery('#cffp_other_imgs_'+area);
+		var type = 'other';
 		
 		if (other_imgs.attr('class') != 'filled') {
 			other_imgs.append(ajaxSpinner);
@@ -166,10 +167,11 @@ function cffp_admin_js() {
 				cf_action: 'cffp_get_images',
 				cffp_area: area,
 				cffp_att_id: att_id,
-				cffp_type: 'other',
+				cffp_type: type,
 			},function(data){
 				jQuery('#cffp-ajax-spinner').remove();
 				other_imgs.append(data);
+				jQuery('#cffp_images_'+area+'-'+type).fadeIn();
 			});
 		}
 		jQuery('#cffp_all_imgs_'+area).hide();
@@ -183,6 +185,7 @@ function cffp_admin_js() {
 	function cffp_allImgs(area, att_id) {
 		var ajaxSpinner = '<div id="cffp-ajax-spinner"><img src="<?php echo trailingslashit(get_bloginfo('wpurl')); ?>/wp-content/plugins/cf-featured-image/images/ajax-loader.gif" border="0" /><br /><span class="ajax-loading"><?php _e('Loading...','cf-archives'); ?></span></div>';
 		var all_imgs = jQuery('#cffp_all_imgs_'+area);
+		var type = 'all';
 		
 		if (all_imgs.attr('class') != 'filled') {
 			all_imgs.append(ajaxSpinner);
@@ -190,10 +193,11 @@ function cffp_admin_js() {
 				cf_action: 'cffp_get_images',
 				cffp_area: area,
 				cffp_att_id: att_id,
-				cffp_type: 'all',
+				cffp_type: type,
 			},function(data){
 				jQuery('#cffp-ajax-spinner').remove();
 				all_imgs.append(data);
+				jQuery('#cffp_images_'+area+'-'+type).fadeIn();				
 			});
 		}
 		jQuery('#cffp_other_imgs_'+area).hide();
@@ -313,7 +317,7 @@ function cffp_get_images($area, $att_id, $type = 'all') {
 	}
 	$container_width = ($imgs['count'] + 2) * 170;
 	print('
-		<div class="cffp_images" style="width:'.$container_width.'px;">
+		<div id="cffp_images_'.$area.'-'.$type.'" class="cffp_images" style="width:'.$container_width.'px; display:none;">
 			');
 			if (!empty($imgs['selected'])) {
 				echo $imgs['selected'];
