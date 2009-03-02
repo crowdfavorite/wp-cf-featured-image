@@ -143,12 +143,13 @@ function cffp_admin_js() {
 	header('Content-type: text/javascript');
 	?>
 	function cffp_postImgs(area) {
-		jQuery('#cffp_other_imgs_'+area).slideUp();
-		jQuery('#cffp_post_imgs_'+area).slideDown();
-		jQuery('#cffp_all_imgs_'+area).slideUp();
-		jQuery('#post-click-'+area).attr('class','cffp_type_active');
+		jQuery('#cffp_other_imgs_'+area).hide();
+		jQuery('#cffp_all_imgs_'+area).hide();
 		jQuery('#other-click-'+area).attr('class','');
 		jQuery('#all-click-'+area).attr('class','');				
+
+		jQuery('#cffp_post_imgs_'+area).fadeIn();
+		jQuery('#post-click-'+area).attr('class','cffp_type_active');
 	}
 	function cffp_otherImgs(area, att_id) {
 		var ajaxSpinner = '<div id="cffp-ajax-spinner"><img src="<?php echo trailingslashit(get_bloginfo('wpurl')); ?>/wp-content/plugins/cf-featured-image/images/ajax-loader.gif" border="0" /><br /><span class="ajax-loading"><?php _e('Loading...','cf-archives'); ?></span></div>';
@@ -166,12 +167,13 @@ function cffp_admin_js() {
 				other_imgs.append(data);
 			});
 		}
-		jQuery('#cffp_all_imgs_'+area).slideUp();
-		jQuery('#cffp_post_imgs_'+area).slideUp();
-		other_imgs.attr('class','filled').slideDown();
-		jQuery('#post-click-'+area).attr('class','');
-		jQuery('#other-click-'+area).attr('class','cffp_type_active');
+		jQuery('#cffp_all_imgs_'+area).hide();
+		jQuery('#cffp_post_imgs_'+area).hide();
 		jQuery('#all-click-'+area).attr('class','');		
+		jQuery('#post-click-'+area).attr('class','');
+		
+		other_imgs.attr('class','filled').fadeIn();
+		jQuery('#other-click-'+area).attr('class','cffp_type_active');
 	}
 	function cffp_allImgs(area, att_id) {
 		var ajaxSpinner = '<div id="cffp-ajax-spinner"><img src="<?php echo trailingslashit(get_bloginfo('wpurl')); ?>/wp-content/plugins/cf-featured-image/images/ajax-loader.gif" border="0" /><br /><span class="ajax-loading"><?php _e('Loading...','cf-archives'); ?></span></div>';
@@ -189,11 +191,12 @@ function cffp_admin_js() {
 				all_imgs.append(data);
 			});
 		}
-		jQuery('#cffp_other_imgs_'+area).slideUp();
-		jQuery('#cffp_post_imgs_'+area).slideUp();
-		all_imgs.attr('class','filled').slideDown();
-		jQuery('#post-click-'+area).attr('class','');
+		jQuery('#cffp_other_imgs_'+area).hide();
+		jQuery('#cffp_post_imgs_'+area).hide();
 		jQuery('#other-click-'+area).attr('class','');
+		jQuery('#post-click-'+area).attr('class','');
+
+		all_imgs.attr('class','filled').fadeIn();
 		jQuery('#all-click-'+area).attr('class','cffp_type_active');		
 	}
 	function cffp_help_text(area) {
