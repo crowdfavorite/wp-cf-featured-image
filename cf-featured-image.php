@@ -17,23 +17,21 @@ if (!defined('PLUGINDIR')) {
 /**
  * 
  * Format for areas array
- * 'key' => array(
+ * $cffp_areas['key'] = array(
  *			'name' => 'Name Here', 
  *			'description' => 'Description of the area here',
  *			'attach_to' => array('post','page')  // defaults to 'post' of not present
- *		)
+ *	);
  */
-$cffp_areas = array(
-		'area1' => array(
-				'name' => 'Area 1',
-				'description' => 'Description of Area 1 here',
-				'attach_to' => array('post','page') // appear on both posts and pages admin pages
-			),
-		'area2' => array(
-				'name' => 'Area 2',
-				'description' => 'Description of Area 2 here',
-				'attach_to' => array('post') // appear on only post admin pages
-			),
+$cffp_areas['area1'] = array(
+	'name' => 'Area 1',
+	'description' => 'Description of Area 1 here',
+	'attach_to' => array('post','page') // appear on both posts and pages admin pages
+);
+$cffp_areas['area2'] = array(
+	'name' => 'Area 2',
+	'description' => 'Description of Area 2 here',
+	'attach_to' => array('post') // appear on only post admin pages
 );
 
 /**
