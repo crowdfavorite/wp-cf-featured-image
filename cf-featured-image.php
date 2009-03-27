@@ -183,7 +183,8 @@ function cffp_admin_js() {
 		jQuery('#all-click-'+area).attr('class','');		
 		jQuery('#post-click-'+area).attr('class','');
 		
-		other_imgs.attr('class','filled').fadeIn();
+		//other_imgs.attr('class','filled').fadeIn();
+		other_imgs.fadeIn();
 		jQuery('#other-click-'+area).attr('class','cffp_type_active');
 	}
 	function cffp_allImgs(area, att_id) {
