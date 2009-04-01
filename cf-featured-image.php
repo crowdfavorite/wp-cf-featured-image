@@ -278,7 +278,7 @@ function cffp_edit_post($post,$area) {
 		$noimg_selected = '';
 	}
 	
-	$post_container_width = ($post_imgs['count'] + 1) * 170;
+	$post_container_width = ($post_imgs['count'] + 2) * 170;
 	
 	print('
 	<div class="cffp_help">
@@ -349,7 +349,7 @@ function cffp_get_images($area, $att_id, $type = 'all', $post_id) {
 		global $post;
 		$imgs = cffp_get_img_attachments('= '.$post_id, $att_id, $area, $type, $area_info['mime_types']);
 	}
-	$container_width = ($imgs['count'] + 1) * 170;
+	$container_width = ($imgs['count'] + 2) * 170;
 	print('
 		<div id="cffp_'.$type.'_imgs_'.$area.'" class="cffp_images" style="width:'.$container_width.'px;">
 			');
