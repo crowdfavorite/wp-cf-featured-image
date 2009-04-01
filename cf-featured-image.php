@@ -178,6 +178,10 @@ function cffp_admin_css() {
 }
 
 function cffp_admin_js() {
+	$url = trailingslashit(get_bloginfo('url'));
+	if (FORCE_SSL_ADMIN) {
+		$url = str_replace('http','https',$url);
+	}
 	header('Content-type: text/javascript');
 	?>
 	function cffp_getImgs(area, att_id, type, postID) {
@@ -188,7 +192,7 @@ function cffp_admin_js() {
 		jQuery('#cffp_post_imgs_'+area+'_wrapper').hide();
 		jQuery('#cffp_ajax_spinner_'+area+'_wrapper').fadeIn();
 		
-		jQuery.post('<?php echo trailingslashit(get_bloginfo('url')); ?>', {
+		jQuery.post('<?php echo $url; ?>', {
 			cf_action: 'cffp_get_images',
 			cffp_area: area,
 			cffp_att_id: att_id,
