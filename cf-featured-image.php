@@ -113,14 +113,13 @@ function cffp_admin_css() {
 	header('Content-type: text/css');
 	?>
 	.cffp_overall {
-		height:230px;
+		height:214px;
 		overflow:auto;
 	}
 	.cffp_container {
 		text-align: center; 
 		width: 160px; 
 		float: left;
-		padding: 5px;
 	}
 	#cffp_ajax_spinner {
 		width:160px;
@@ -128,6 +127,8 @@ function cffp_admin_css() {
 		float:left;
 		text-align:center;
 		vertical-align:middle;
+	}
+	.cffp_help {
 	}
 	.cffp_help a {
 		cursor:pointer;
@@ -165,9 +166,6 @@ function cffp_admin_css() {
 	}
 	.cffp_radio {
 		padding: 10px 0 0;
-	}
-	.cffp_help {
-		padding: 10px;
 	}
 	.cffp_clear {
 		float:none;
@@ -417,8 +415,11 @@ function cffp_get_img_attachments($id_string, $cffp_att_id, $cffp_id, $type, $mi
 
 			if ($cffp_att_id != $cffp_attachment['ID']) {
 				$label = '';
-				if ($cffp_attachment['post_mime_type'] == 'application/octet-stream' || $cffp_attachment['post_mime_type'] == 'application/pdf') {
-					$label = '<label class="cffp_img" for="cffp-'.$cffp_id.'-'.$type.'-leadimg-'.$cffp_attachment['ID'].'">'.$cffp_attachment['post_title'].'</label>';
+				if ($cffp_attachment['post_mime_type'] == 'application/octet-stream') {
+					$label = '<label class="cffp_img" style="background: transparent url('.trailingslashit(get_bloginfo('wpurl')).'/wp-content/plugins/cf-featured-image/images/zip.png) no-repeat scroll center top; width: 150px; height: 12px; line-height:1; padding:148px 0 0 10px;" for="cffp-'.$cffp_id.'-'.$type.'-leadimg-'.$selected->ID.'">'.$selected->post_title.'</label>';
+				}
+				else if ($cffp_attachment['post_mime_type'] == 'application/pdf') {
+					$label = '<label class="cffp_img" style="background: transparent url('.trailingslashit(get_bloginfo('wpurl')).'/wp-content/plugins/cf-featured-image/images/pdf.png) no-repeat scroll center top; width: 150px; height: 12px; line-height:1; padding:148px 0 0 10px;" for="cffp-'.$cffp_id.'-'.$type.'-leadimg-'.$selected->ID.'">'.$selected->post_title.'</label>';
 				}
 				else {
 					$label = '<label class="cffp_img" style="background: transparent url('.$image_link[0].') no-repeat scroll center center; width: 150px; height: 150px;" for="cffp-'.$cffp_id.'-'.$type.'-leadimg-'.$cffp_attachment['ID'].'"></label>';
@@ -448,8 +449,11 @@ function cffp_get_img_attachments_selected($cffp_att_id, $cffp_id) {
 		$image_meta = get_post_meta($selected->ID, '_wp_attachment_metadata', true);
 		
 		$label = '';
-		if ($selected->post_mime_type == 'application/octet-stream' || $selected->post_mime_type == 'application/pdf') {
-			$label = '<label class="cffp_img" for="cffp-'.$cffp_id.'-'.$type.'-leadimg-'.$selected->ID.'">'.$selected->post_title.'</label>';
+		if ($cffp_attachment['post_mime_type'] == 'application/octet-stream') {
+			$label = '<label class="cffp_img" style="background: transparent url('.trailingslashit(get_bloginfo('wpurl')).'/wp-content/plugins/cf-featured-image/images/zip.png) no-repeat scroll center top; width: 150px; height: 12px; line-height:1; padding:148px 0 0 10px;" for="cffp-'.$cffp_id.'-'.$type.'-leadimg-'.$selected->ID.'">'.$selected->post_title.'</label>';
+		}
+		else if ($cffp_attachment['post_mime_type'] == 'application/pdf') {
+			$label = '<label class="cffp_img" style="background: transparent url('.trailingslashit(get_bloginfo('wpurl')).'/wp-content/plugins/cf-featured-image/images/pdf.png) no-repeat scroll center top; width: 150px; height: 12px; line-height:1; padding:148px 0 0 10px;" for="cffp-'.$cffp_id.'-'.$type.'-leadimg-'.$selected->ID.'">'.$selected->post_title.'</label>';
 		}
 		else {
 			$label = '<label class="cffp_img" style="background: transparent url('.$image_link[0].') no-repeat scroll center center; width: 150px; height: 150px;" for="cffp-'.$cffp_id.'-'.$type.'-leadimg-'.$selected->ID.'"></label>';
