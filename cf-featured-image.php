@@ -14,6 +14,35 @@ if (!defined('PLUGINDIR')) {
 	define('PLUGINDIR','wp-content/plugins');
 }
 
+
+// README HANDLING
+	add_action('admin_init','cffp_add_readme');
+
+	/**
+	 * Enqueue the readme function
+	 */
+	function cffp_add_readme() {
+		if(function_exists('cfreadme_enqueue')) {
+			cfreadme_enqueue('cf-featured-image','cffp_readme');
+		}
+	}
+	
+	/**
+	 * return the contents of the links readme file
+	 * replace the image urls with full paths to this plugin install
+	 *
+	 * @return string
+	 */
+	function cffp_readme() {
+		$file = realpath(dirname(__FILE__)).'/README.txt';
+		if(is_file($file) && is_readable($file)) {
+			$markdown = file_get_contents($file);
+			$markdown = preg_replace('|!\[(.*?)\]\((.*?)\)|','![$1]('.WP_PLUGIN_URL.'/cf-featured-image/$2)',$markdown);
+			return $markdown;
+		}
+		return null;
+	}
+		
 /**
  * 
  * Format for areas array

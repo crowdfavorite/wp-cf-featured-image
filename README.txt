@@ -1,11 +1,10 @@
-Crowd Favorite Featured Image Plugin
-====================================
+## CF Featured Image
 
-## Description
+### Description
 
 This plugin shows the WordPress Media Gallery images associated with a post and allows you to select one as a "Featured Image". The image can then be output using a template tag or referenced in other programatic ways. _Featured Image_ also allows for multiple featured images to be associated with a post, through the creation of multiple Featured Image pickers (each with it's own box on the post page).
 
-## Installation and Setup
+### Installation and Setup
 
 1. Download the plugin archive and expand it (you've likely already done this).
 
@@ -32,7 +31,7 @@ This plugin shows the WordPress Media Gallery images associated with a post and 
 
 5. Congratulations, you've just installed _Crowd Favorite Featured Image_.
 
-### Implementing the template tag
+#### Implementing the template tag
 
 _Featured Image_ has four main template tags:
 
