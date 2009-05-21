@@ -47,6 +47,28 @@ Each template tags takes four parameters:
 - The desired image size (`thumbnail`, `medium`, or `full`)
 - The image area id
 
-## Using _Featured Image_ in the Admin
+### Using _Featured Image_ in the Admin
 
-Upload images via the standard WordPress Media Gallery. Refresh the browser window to see added images. After uploading and refreshing, select the image that you wish to use as the featured image and click "Update Post". Done!
+- The Featured Image plugin gives the user the ability to add a "Featured" image to certain areas of pages via the themes
+- To select a featured image:
+	1.  Log in to the WP Admin
+	2.  Click on the "Edit" link under the "Posts" area of the left side navigation
+	3.  Click on the Post Title for the post you would like to add a "Featured" image to to get to the post edit page
+	4.  Add the image you would like to be the "Featured" image to the post
+	5.  Click on the "Post Files" link under the "Featured Image" section of the screen to get the new image in the area to be selectable
+	6.  Click on the image you would like to be the "Featured" image
+	7.  Click the "Update Post" button to save the changes
+	
+### New Functionality
+
+- The newest version of the Featured Image plugin gives the user much better handling of images
+- There are now 3 different areas to find images to be featured for the current post
+	1.  Post Files
+		- The post files area shows all of the images attached to the current post.
+		- When a new image is added to the post, click on the "Post Files" link to refresh the section and bring up the newly added image
+	2.  Unattached Files
+		- This section shows all of the files that are not attached to any posts
+	3.  All Files
+		- This section shows all of the files on the site.
+		- This could potentially be a lot of images, so if "Loading..." is display for a long time, please be patient as it is trying to load all of the images on the site.
+- The new functionality with these 3 sections means that a single image, or group of images can be used multiple times throughout the site as the featured image
