@@ -218,13 +218,13 @@ function cffp_admin_js() {
 		jQuery('#cffp_other_imgs_'+area+'_wrapper').hide();
 		jQuery('#cffp_post_imgs_'+area+'_wrapper').hide();
 		jQuery('#cffp_ajax_spinner_'+area+'_wrapper').fadeIn();
-		
+
 		jQuery.post('<?php echo $url; ?>', {
 			cf_action: 'cffp_get_images',
 			cffp_area: area,
 			cffp_att_id: att_id,
 			cffp_post_id: postID,
-			cffp_type: type,
+			cffp_type: type
 		},function(data){
 			jQuery('#cffp_ajax_spinner_'+area+'_wrapper').hide();
 			imgs_area.replaceWith(data);
@@ -265,7 +265,7 @@ function cffp_admin_head() {
 
 	echo '<link rel="stylesheet" type="text/css" href="'.trailingslashit(get_bloginfo('url')).'index.php?cf_action=cffp_admin_css" />';
 	echo '<script type="text/javascript" src="'.trailingslashit(get_bloginfo('wpurl')).'index.php?cf_action=cffp_admin_js"></script>';	
-	
+
 	foreach ($cffp_areas as $key => $area) {
 		$area_id = sanitize_title('cffp-'.$key);
 		if (!is_array($area['attach_to'])) {
