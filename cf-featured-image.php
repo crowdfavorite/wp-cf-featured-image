@@ -124,7 +124,7 @@ function cffp_request_handler() {
 		switch ($_POST['cf_action']) {
 			case 'cffp_get_images':
 				if (isset($_POST['cffp_area']) && $_POST['cffp_area'] != '' && isset($_POST['cffp_att_id']) && $_POST['cffp_att_id'] != '' && isset($_POST['cffp_type']) && $_POST['cffp_type'] != '' && isset($_POST['cffp_post_id']) && $_POST['cffp_post_id'] != '') {
-					cffp_get_images($_POST['cffp_area'], $_POST['cffp_att_id'], $_POST['cffp_type'], $_POST['cffp_post_id']);
+					cffp_get_images($_POST['cffp_area'], $_POST['cffp_att_id'], $_POST['cffp_type'], $_POST['cffp_post_id'],$_POST['cffp_last_selected']);
 				}
 				die();
 		}
@@ -219,14 +219,28 @@ function cffp_admin_js() {
 		jQuery('#cffp_other_imgs_'+area+'_wrapper').hide();
 		jQuery('#cffp_post_imgs_'+area+'_wrapper').hide();
 		jQuery('#cffp_ajax_spinner_'+area+'_wrapper').fadeIn();
-
+		
+		var select_val = jQuery('#'+type+'-click-'+area).attr('cffp_last_checked');
+		
 		jQuery.post('<?php echo $url; ?>', {
 			cf_action: 'cffp_get_images',
 			cffp_area: area,
 			cffp_att_id: att_id,
 			cffp_post_id: postID,
+			cffp_last_selected: select_val,
 			cffp_type: type
 		},function(data){
+			data = jQuery(data);
+			jQuery('input[type="radio"]', data).each(function() {
+				jQuery(this).change(function(){
+					var type = jQuery(this).attr('cffp_type');
+					var area = jQuery(this).parent().parent().parent().attr('id');
+					
+					area = area.replace('cffp_'+type+'_imgs__','');
+					cffp_last_checked(type, area);
+				});
+			});
+			
 			jQuery('#cffp_ajax_spinner_'+area+'_wrapper').hide();
 			imgs_area.replaceWith(data);
 			jQuery('#cffp_'+type+'_imgs_'+area+'_wrapper').fadeIn();
@@ -243,16 +257,15 @@ function cffp_admin_js() {
 				jQuery('#all-click-'+area).attr('class','');
 				jQuery('#other-click-'+area).attr('class','');
 			}
-			if (type == 'all') {
-				jQuery('#all-click-'+area).attr('class','cffp_type_active');
-			}
-			if (type == 'other') {
-				jQuery('#other-click-'+area).attr('class','cffp_type_active');
-			}
-			if (type == 'post') {
-				jQuery('#post-click-'+area).attr('class','cffp_type_active');
-			}
+			jQuery('#'+type+'-click-'+area).attr('class','cffp_type_active');
 		});
+	}
+	function cffp_last_checked(type, area) {
+		var last_val = jQuery('#'+area+' .cffp_overall input[type="radio"]:checked').val();
+		if (last_val == null) {
+			last_val = 0;
+		}
+		jQuery('#'+type+'-click-_'+area).attr('cffp_last_checked',last_val);
 	}
 	function cffp_help_text(area) {
 		jQuery('#cffp_help_text_'+area).slideToggle();
@@ -304,8 +317,8 @@ function cffp_edit_post($post,$area) {
 		$id_string = '= '.$post->ID;
 	}
 	
-	$post_imgs = cffp_get_img_attachments($id_string, $cffp_att_id, $cffp_id, 'post', $area_info['mime_types']);
-	$selected_img = cffp_get_img_attachments_selected($cffp_att_id, $cffp_id);
+	// $post_imgs = cffp_get_img_attachments($id_string, $cffp_att_id, $cffp_id, 'post', $area_info['mime_types']);
+	// $selected_img = cffp_get_img_attachments_selected($cffp_att_id, $cffp_id);
 	
 	if (empty($post_imgs['html']) || $post->ID == 0) {
 		$post_container_width = 170;
@@ -336,7 +349,7 @@ function cffp_edit_post($post,$area) {
 	<div class="cffp_help">
 		<p>'.$cffp_description.' <a onclick="cffp_help_text(\''.$cffp_id.'\')"><em>Help</em></a></p>
 		<p id="cffp_help_text_'.$cffp_id.'" style="display:none;"><em>'.__('To add new files, upload them via the Media Gallery. Once files have been uploaded, click the Post Files button to refresh.').'</em></p>
-		<p><a id="post-click-'.$cffp_id.'" onclick="cffp_getImgs(\''.$cffp_id.'\',\''.$cffp_att_id.'\',\'post\',\''.$post->ID.'\')" class="cffp_type_active">Post Files</a><a id="other-click-'.$cffp_id.'" onclick="cffp_getImgs(\''.$cffp_id.'\',\''.$cffp_att_id.'\',\'other\',\''.$post->ID.'\')">Unattached Files</a><a id="all-click-'.$cffp_id.'" onclick="cffp_getImgs(\''.$cffp_id.'\',\''.$cffp_att_id.'\',\'all\',\''.$post->ID.'\')">All Files</a></p>
+		<p><a id="post-click-'.$cffp_id.'" onclick="cffp_getImgs(\''.$cffp_id.'\',\''.$cffp_att_id.'\',\'post\',\''.$post->ID.'\')" class="cffp_type_active" cffp_class="post-click" cffp_last_checked="'.$cffp_att_id.'">Post Files</a><a id="other-click-'.$cffp_id.'" onclick="cffp_getImgs(\''.$cffp_id.'\',\''.$cffp_att_id.'\',\'other\',\''.$post->ID.'\')" cffp_class="other-click" cffp_last_checked="'.$cffp_att_id.'">Unattached Files</a><a id="all-click-'.$cffp_id.'" onclick="cffp_getImgs(\''.$cffp_id.'\',\''.$cffp_att_id.'\',\'all\',\''.$post->ID.'\')" cffp_class="all-click" cffp_last_checked="'.$cffp_att_id.'">All Files</a></p>
 	</div>
 	<div class="cffp_overall">
 		<div id="cffp_ajax_spinner_'.$cffp_id.'_wrapper" style="display:none;">
@@ -374,20 +387,20 @@ function cffp_edit_post($post,$area) {
 	');
 }
 
-function cffp_get_images($area, $att_id, $type = 'all', $post_id) {
+function cffp_get_images($area, $att_id, $type = 'all', $post_id, $last_selected) {
 	global $cffp_areas;
 	
 	$area_info = $cffp_areas[str_replace('_cffp-','',$area)];
 	
 	if ($type == 'all') {
-		$imgs = cffp_get_img_attachments('', $att_id, $area, $type, $area_info['mime_types']);
+		$imgs = cffp_get_img_attachments('', $att_id, $area, $type, $area_info['mime_types'], $last_selected);
 	}
 	if ($type == 'other') {
-		$imgs = cffp_get_img_attachments('<= 0', $att_id, $area, $type, $area_info['mime_types']);
+		$imgs = cffp_get_img_attachments('<= 0', $att_id, $area, $type, $area_info['mime_types'], $last_selected);
 	}
 	if ($type == 'post') {
 		global $post;
-		$imgs = cffp_get_img_attachments('= '.$post_id, $att_id, $area, $type, $area_info['mime_types']);
+		$imgs = cffp_get_img_attachments('= '.$post_id, $att_id, $area, $type, $area_info['mime_types'], $last_selected);
 	}
 	$container_width = ($imgs['count'] + 1) * 170;
 	print('
@@ -405,7 +418,7 @@ function cffp_get_images($area, $att_id, $type = 'all', $post_id) {
 	die();
 }
 
-function cffp_get_img_attachments($id_string, $cffp_att_id, $cffp_id, $type, $mime_types = array()) {
+function cffp_get_img_attachments($id_string, $cffp_att_id, $cffp_id, $type, $mime_types = array(), $last_selected = 0) {
 	global $wpdb,$cffp_mime_types;
 	$return = '';
 	$parent = '';
@@ -464,14 +477,14 @@ function cffp_get_img_attachments($id_string, $cffp_att_id, $cffp_id, $type, $mi
 			<div class="cffp_container'.$noimg_selected.'">
 				<label class="cffp_img" for="cffp-'.$cffp_id.'-leadimg-0">'.__('No Image').'</label>
 				<div class="cffp_radio">
-					<input type="radio" class="cffp_radios" name="cffp['.$cffp_id.']" id="cffp-'.$cffp_id.'-leadimg-0" value="NULL"'.$noimg_checked.' />
+					<input type="radio" class="cffp_radios" cffp_type="'.$type.'" name="cffp['.$cffp_id.']" id="cffp-'.$cffp_id.'-leadimg-0" value="NULL"'.$noimg_checked.' />
 				</div>
 			</div>
 	';
 	
 	// Now lets deal with the selected image if we have one
 	if ($cffp_att_id != 'NULL' && $cffp_att_id != 0 && $cffp_att_id != '') {
-		$selected_img .= cffp_get_img_attachments_selected($cffp_att_id, $cffp_id);
+		$selected_img .= cffp_get_img_attachments_selected($cffp_att_id, $cffp_id, $type);
 	}
 	
 	$cffp_attachments = $wpdb->get_results("SELECT * FROM $wpdb->posts WHERE post_type LIKE 'attachment' $parent AND post_mime_type NOT LIKE '' AND($mime_query) ORDER BY post_title ASC", ARRAY_A);
@@ -483,6 +496,12 @@ function cffp_get_img_attachments($id_string, $cffp_att_id, $cffp_id, $type, $mi
 
 			if ($cffp_att_id != $cffp_attachment['ID']) {
 				$label = '';
+				$img_checked = '';
+				
+				if ($cffp_attachment['ID'] == $last_selected) {
+					$img_checked = ' checked="checked"';
+				}
+				
 				if ($cffp_attachment['post_mime_type'] == 'application/octet-stream') {
 					$label = '<label class="cffp_img" style="background: transparent url('.trailingslashit(get_bloginfo('wpurl')).'/wp-content/plugins/cf-featured-image/images/zip.png) no-repeat scroll center top; width: 150px; height: 12px; line-height:1; padding:148px 0 0 10px;" for="cffp-'.$cffp_id.'-'.$type.'-leadimg-'.$cffp_attachment['ID'].'">'.$cffp_attachment['post_title'].'</label>';
 				}
@@ -496,7 +515,7 @@ function cffp_get_img_attachments($id_string, $cffp_att_id, $cffp_id, $type, $mi
 					<div class="cffp_container">
 						'.$label.'
 						<div class="cffp_radio">
-							<input type="radio" class="cffp_radios" name="cffp['.$cffp_id.']" id="cffp-'.$cffp_id.'-'.$type.'-leadimg-'.$cffp_attachment['ID'].'" value="'.$cffp_attachment['ID'].'" />
+							<input type="radio" class="cffp_radios" cffp_type="'.$type.'" name="cffp['.$cffp_id.']" id="cffp-'.$cffp_id.'-'.$type.'-leadimg-'.$cffp_attachment['ID'].'" value="'.$cffp_attachment['ID'].'"'.$img_checked.' />
 						</div>
 					</div>
 				';
@@ -507,7 +526,7 @@ function cffp_get_img_attachments($id_string, $cffp_att_id, $cffp_id, $type, $mi
 	return array('html' => $return, 'count' => $count);
 }
 
-function cffp_get_img_attachments_selected($cffp_att_id, $cffp_id) {
+function cffp_get_img_attachments_selected($cffp_att_id, $cffp_id, $type) {
 	global $wpdb;
 	$return = '';
 	
@@ -531,7 +550,7 @@ function cffp_get_img_attachments_selected($cffp_att_id, $cffp_id) {
 			<div class="cffp_container cffp_selected">
 				'.$label.'
 				<div class="cffp_radio">
-					<input type="radio" class="cffp_radios" name="cffp['.$cffp_id.']" id="cffp-'.$cffp_id.'-leadimg-'.$selected->ID.'" value="'.$selected->ID.'" checked="checked" />
+					<input type="radio" class="cffp_radios" cffp_type="'.$type.'" name="cffp['.$cffp_id.']" id="cffp-'.$cffp_id.'-leadimg-'.$selected->ID.'" value="'.$selected->ID.'" checked="checked" />
 				</div>
 			</div>
 		';
