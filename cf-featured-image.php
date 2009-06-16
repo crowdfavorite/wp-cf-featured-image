@@ -142,7 +142,7 @@ function cffp_admin_css() {
 	header('Content-type: text/css');
 	?>
 	.cffp_overall {
-		height:214px;
+		height:218px;
 		overflow:auto;
 	}
 	.cffp_container {
@@ -195,6 +195,7 @@ function cffp_admin_css() {
 	}
 	.cffp_radio {
 		padding: 10px 0 0;
+		margin:4px;
 	}
 	.cffp_clear {
 		float:none;
@@ -297,10 +298,23 @@ function cffp_edit_post($post,$area) {
 	if ($cffp_att_id == '') {
 		$cffp_att_id = 0;
 	}
-	$post_imgs = cffp_get_img_attachments('= '.$post->ID, $cffp_att_id, $cffp_id, 'post', $area_info['mime_types']);
+
+	$id_string = '';
+	if ($post->ID != 0) {
+		$id_string = '= '.$post->ID;
+	}
+	
+	$post_imgs = cffp_get_img_attachments($id_string, $cffp_att_id, $cffp_id, 'post', $area_info['mime_types']);
 	$selected_img = cffp_get_img_attachments_selected($cffp_att_id, $cffp_id);
 	
-	if ($cffp_att_id == 'NULL' || $cffp_att_id == '') {
+	if (empty($post_imgs['html']) || $post->ID == 0) {
+		$post_container_width = 170;
+	}
+	else {
+		$post_container_width = ($post_imgs['count'] + 1) * 170;
+	}
+	
+	if ($cffp_att_id == 'NULL' || $cffp_att_id == 0 && $cffp_att_id != '') {
 		$noimg_checked = ' checked="checked"';
 		$noimg_selected = ' cffp_selected';
 	}
@@ -308,8 +322,15 @@ function cffp_edit_post($post,$area) {
 		$noimg_checked = '';
 		$noimg_selected = '';
 	}
-	
-	$post_container_width = ($post_imgs['count'] + 2) * 170;
+
+	$no_img .= '
+			<div class="cffp_container'.$noimg_selected.'">
+				<label class="cffp_img" for="cffp-'.$cffp_id.'-leadimg-0">'.__('No Image').'</label>
+				<div class="cffp_radio">
+					<input type="radio" name="cffp['.$cffp_id.']" id="cffp-'.$cffp_id.'-leadimg-0" value="NULL"'.$noimg_checked.' />
+				</div>
+			</div>
+	';
 	
 	print('
 	<div class="cffp_help">
@@ -318,21 +339,6 @@ function cffp_edit_post($post,$area) {
 		<p><a id="post-click-'.$cffp_id.'" onclick="cffp_getImgs(\''.$cffp_id.'\',\''.$cffp_att_id.'\',\'post\',\''.$post->ID.'\')" class="cffp_type_active">Post Files</a><a id="other-click-'.$cffp_id.'" onclick="cffp_getImgs(\''.$cffp_id.'\',\''.$cffp_att_id.'\',\'other\',\''.$post->ID.'\')">Unattached Files</a><a id="all-click-'.$cffp_id.'" onclick="cffp_getImgs(\''.$cffp_id.'\',\''.$cffp_att_id.'\',\'all\',\''.$post->ID.'\')">All Files</a></p>
 	</div>
 	<div class="cffp_overall">
-		<div id="cffp_none" style="width:170px;">
-			<div class="cffp_container'.$noimg_selected.'">
-				<label class="cffp_img" for="cffp-'.$cffp_id.'-leadimg-0">'.__('No Image').'</label>
-				<div class="cffp_radio">
-					<input type="radio" name="cffp['.$cffp_id.']" id="cffp-'.$cffp_id.'-leadimg-0" value="NULL"'.$noimg_checked.' />
-				</div>
-			</div>
-		</div>
-		<div id="cffp_selected_img_'.$cffp_id.'">
-			');
-			if ($selected_img != '') {
-				echo $selected_img;
-			}
-			print('
-		</div>
 		<div id="cffp_ajax_spinner_'.$cffp_id.'_wrapper" style="display:none;">
 			<div id="cffp_ajax_spinner">
 				<img src="'.trailingslashit(get_bloginfo('wpurl')).'/wp-content/plugins/cf-featured-image/images/ajax-loader.gif" border="0" />
@@ -345,6 +351,9 @@ function cffp_edit_post($post,$area) {
 			<div id="cffp_post_imgs_'.$cffp_id.'">
 				<div class="cffp_images" style="width:'.$post_container_width.'px;">
 					');
+					if (empty($post_imgs['html']) || $post->ID == 0) {
+						echo $no_img;
+					}
 					if (!empty($post_imgs['html']) && $post->ID != 0) {
 						echo $post_imgs['html'];
 					}
@@ -380,7 +389,7 @@ function cffp_get_images($area, $att_id, $type = 'all', $post_id) {
 		global $post;
 		$imgs = cffp_get_img_attachments('= '.$post_id, $att_id, $area, $type, $area_info['mime_types']);
 	}
-	$container_width = ($imgs['count'] + 2) * 170;
+	$container_width = ($imgs['count'] + 1) * 170;
 	print('
 		<div id="cffp_'.$type.'_imgs_'.$area.'" class="cffp_images" style="width:'.$container_width.'px;">
 			');
@@ -435,6 +444,36 @@ function cffp_get_img_attachments($id_string, $cffp_att_id, $cffp_id, $type, $mi
 	}
 
 	$count = 1;
+	
+	// Setup the vars
+	$all_img = '';
+	$no_img = '';
+	$selected_img = '';
+	
+	// Lets deal with the No Image area
+	if ($cffp_att_id == 'NULL' || $cffp_att_id == 0 && $cffp_att_id != '') {
+		$noimg_checked = ' checked="checked"';
+		$noimg_selected = ' cffp_selected';
+	}
+	else {
+		$noimg_checked = '';
+		$noimg_selected = '';
+	}
+	
+	$no_img .= '
+			<div class="cffp_container'.$noimg_selected.'">
+				<label class="cffp_img" for="cffp-'.$cffp_id.'-leadimg-0">'.__('No Image').'</label>
+				<div class="cffp_radio">
+					<input type="radio" class="cffp_radios" name="cffp['.$cffp_id.']" id="cffp-'.$cffp_id.'-leadimg-0" value="NULL"'.$noimg_checked.' />
+				</div>
+			</div>
+	';
+	
+	// Now lets deal with the selected image if we have one
+	if ($cffp_att_id != 'NULL' && $cffp_att_id != 0 && $cffp_att_id != '') {
+		$selected_img .= cffp_get_img_attachments_selected($cffp_att_id, $cffp_id);
+	}
+	
 	$cffp_attachments = $wpdb->get_results("SELECT * FROM $wpdb->posts WHERE post_type LIKE 'attachment' $parent AND post_mime_type NOT LIKE '' AND($mime_query) ORDER BY post_title ASC", ARRAY_A);
 	if (count($cffp_attachments)) {
 		$count = count($cffp_attachments);
@@ -453,18 +492,18 @@ function cffp_get_img_attachments($id_string, $cffp_att_id, $cffp_id, $type, $mi
 				else {
 					$label = '<label class="cffp_img" style="background: transparent url('.$image_link[0].') no-repeat scroll center center; width: 150px; height: 150px;" for="cffp-'.$cffp_id.'-'.$type.'-leadimg-'.$cffp_attachment['ID'].'"></label>';
 				}
-				$return .= '
+				$all_img .= '
 					<div class="cffp_container">
 						'.$label.'
 						<div class="cffp_radio">
-							<input type="radio" name="cffp['.$cffp_id.']" id="cffp-'.$cffp_id.'-'.$type.'-leadimg-'.$cffp_attachment['ID'].'" value="'.$cffp_attachment['ID'].'" />
+							<input type="radio" class="cffp_radios" name="cffp['.$cffp_id.']" id="cffp-'.$cffp_id.'-'.$type.'-leadimg-'.$cffp_attachment['ID'].'" value="'.$cffp_attachment['ID'].'" />
 						</div>
 					</div>
 				';
 			}
 		}
-		
 	}
+	$return = $no_img.$selected_img.$all_img;
 	return array('html' => $return, 'count' => $count);
 }
 
@@ -492,7 +531,7 @@ function cffp_get_img_attachments_selected($cffp_att_id, $cffp_id) {
 			<div class="cffp_container cffp_selected">
 				'.$label.'
 				<div class="cffp_radio">
-					<input type="radio" name="cffp['.$cffp_id.']" id="cffp-'.$cffp_id.'-leadimg-'.$selected->ID.'" value="'.$selected->ID.'" checked="checked" />
+					<input type="radio" class="cffp_radios" name="cffp['.$cffp_id.']" id="cffp-'.$cffp_id.'-leadimg-'.$selected->ID.'" value="'.$selected->ID.'" checked="checked" />
 				</div>
 			</div>
 		';
