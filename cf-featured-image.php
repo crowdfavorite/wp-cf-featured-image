@@ -317,7 +317,7 @@ function cffp_edit_post($post,$area) {
 		$id_string = '= '.$post->ID;
 	}
 	
-	// $post_imgs = cffp_get_img_attachments($id_string, $cffp_att_id, $cffp_id, 'post', $area_info['mime_types']);
+	$post_imgs = cffp_get_img_attachments($id_string, $cffp_att_id, $cffp_id, 'post', $area_info['mime_types']);
 	// $selected_img = cffp_get_img_attachments_selected($cffp_att_id, $cffp_id);
 	
 	if (empty($post_imgs['html']) || $post->ID == 0) {
@@ -464,12 +464,16 @@ function cffp_get_img_attachments($id_string, $cffp_att_id, $cffp_id, $type, $mi
 	$selected_img = '';
 	
 	// Lets deal with the No Image area
-	if ($cffp_att_id == 'NULL' || $cffp_att_id == 0 && $cffp_att_id != '') {
+	if (($cffp_att_id == 'NULL' || $cffp_att_id == 0 || $cffp_att_id == '') && $cffp_att_id == $last_selected) {
 		$noimg_checked = ' checked="checked"';
-		$noimg_selected = ' cffp_selected';
 	}
 	else {
 		$noimg_checked = '';
+	}
+	if ($cffp_att_id == 'NULL' || $cffp_att_id == 0 || $cffp_att_id == '') {
+		$noimg_selected = ' cffp_selected';
+	}
+	else {
 		$noimg_selected = '';
 	}
 	
@@ -484,12 +488,13 @@ function cffp_get_img_attachments($id_string, $cffp_att_id, $cffp_id, $type, $mi
 	
 	// Now lets deal with the selected image if we have one
 	if ($cffp_att_id != 'NULL' && $cffp_att_id != 0 && $cffp_att_id != '') {
+		$count++;
 		$selected_img .= cffp_get_img_attachments_selected($cffp_att_id, $cffp_id, $type);
 	}
 	
 	$cffp_attachments = $wpdb->get_results("SELECT * FROM $wpdb->posts WHERE post_type LIKE 'attachment' $parent AND post_mime_type NOT LIKE '' AND($mime_query) ORDER BY post_title ASC", ARRAY_A);
 	if (count($cffp_attachments)) {
-		$count = count($cffp_attachments);
+		$count = $count+count($cffp_attachments);
 		
 		foreach ($cffp_attachments as $cffp_attachment) {
 			$image_link = wp_get_attachment_image_src($cffp_attachment['ID']);
