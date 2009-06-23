@@ -290,7 +290,10 @@ function cffp_admin_head() {
 		}		
 	}
 }
-add_action('admin_head','cffp_admin_head');
+global $pagenow;
+if ($pagenow == 'post-new.php' || $pagenow == 'post.php') {
+	add_action('admin_head','cffp_admin_head');
+}
 
 /**
  * 
