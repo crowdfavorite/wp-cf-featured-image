@@ -598,9 +598,10 @@ function cffp_get_img_tag($post_id = 0, $size = 'thumbnail', $area = '') {
 			global $post;
 			$post_id = $post->ID;
 		}
-		$cffp_image = wp_get_attachment_image_src(get_post_meta($post_id, '_cffp-'.$area, true), $size);
+		$cffp_id = get_post_meta($post_id, '_cffp-'.$area, true);
+		$cffp_image = wp_get_attachment_image_src($cffp_id, $size);
 		if ($cffp_image[0] != '') {
-			return '<img src="'.$cffp_image[0].'" alt="'.attribute_escape(get_the_title($post_id)).'" />';
+			return '<img src="'.$cffp_image[0].'" alt="'.attribute_escape(get_the_title($cffp_id)).'" />';
 		}
 	}
 	return '';
