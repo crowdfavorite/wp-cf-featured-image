@@ -600,7 +600,7 @@ function cffp_get_img_tag($post_id = 0, $size = 'thumbnail', $area = '') {
 		}
 		$cffp_image = wp_get_attachment_image_src(get_post_meta($post_id, '_cffp-'.$area, true), $size);
 		if ($cffp_image[0] != '') {
-			return '<img src="'.$cffp_image[0].'" alt="featured post image for post id: '.$post_id.'" />';
+			return '<img src="'.$cffp_image[0].'" alt="'.attribute_escape(get_the_title($post_id)).'" />';
 		}
 	}
 	return '';
