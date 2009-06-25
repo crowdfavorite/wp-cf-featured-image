@@ -1,0 +1,5 @@
+# CF Featured Image Changelog
+
+## 1.4.4
+
+- Changed the ALT tag on the function 'cffp_get_img_tag' so it displays the Post title (image name)
