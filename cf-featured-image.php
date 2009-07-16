@@ -277,17 +277,19 @@ function cffp_admin_js() {
 function cffp_admin_head() {
 	global $cffp_areas;
 
-	echo '<link rel="stylesheet" type="text/css" href="'.trailingslashit(get_bloginfo('url')).'index.php?cf_action=cffp_admin_css" />';
-	echo '<script type="text/javascript" src="'.trailingslashit(get_bloginfo('wpurl')).'index.php?cf_action=cffp_admin_js"></script>';	
+	if (is_array($cffp_areas) && !empty($cffp_areas)) {
+		echo '<link rel="stylesheet" type="text/css" href="'.trailingslashit(get_bloginfo('url')).'index.php?cf_action=cffp_admin_css" />';
+		echo '<script type="text/javascript" src="'.trailingslashit(get_bloginfo('wpurl')).'index.php?cf_action=cffp_admin_js"></script>';	
 
-	foreach ($cffp_areas as $key => $area) {
-		$area_id = sanitize_title('cffp-'.$key);
-		if (!is_array($area['attach_to'])) {
-			$area['attach_to'] = array('post');
+		foreach ($cffp_areas as $key => $area) {
+			$area_id = sanitize_title('cffp-'.$key);
+			if (!is_array($area['attach_to'])) {
+				$area['attach_to'] = array('post');
+			}
+			foreach ($area['attach_to'] as $here) {
+				add_meta_box($area_id, htmlspecialchars($area['name']), 'cffp_edit_post', $here, 'normal', 'high');
+			}		
 		}
-		foreach ($area['attach_to'] as $here) {
-			add_meta_box($area_id, htmlspecialchars($area['name']), 'cffp_edit_post', $here, 'normal', 'high');
-		}		
 	}
 }
 add_action('admin_head','cffp_admin_head');
