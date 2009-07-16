@@ -292,7 +292,20 @@ function cffp_admin_head() {
 		}
 	}
 }
-add_action('admin_head','cffp_admin_head');
+
+// Grab the current page file
+global $pagenow;
+// An array for checking to see if the content should be added
+$cffp_addition = array(
+	'post-new.php',
+	'page-new.php',
+	'post.php',
+	'page.php'
+);
+// Checking to see if the current page is in our addition array
+if (in_array($pagenow, $cffp_addition)) {
+	add_action('admin_head','cffp_admin_head');
+}
 
 /**
  * 
