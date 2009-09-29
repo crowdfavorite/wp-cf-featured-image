@@ -4,8 +4,14 @@
 
 - Changed the ALT tag on the function 'cffp_get_img_tag' so it displays the Post title (image name)
 
-### 1.4.5
+## 1.4.5
 
 - Fixed a bug if no 'cffp_areas' have been added via the filter
 - Added a check to the current admin page and only add the JS/CSS if on page.php, page-new.php, post.php or post-new.php
 
+
+## 1.5
+
+- Fixed version # in plugin (1.4.5 had version 1.4)
+- Do not add post meta if no value for cffp area
+- Added intval security call

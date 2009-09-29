@@ -3,7 +3,7 @@
 Plugin Name: CF Featured Image
 Plugin URI: http://crowdfavorite.com 
 Description: This plugin adds a field to the post page to select a thumbnail image to be added to the feature image area of the main page. 
-Version: 1.4.4
+Version: 1.5
 Author: Crowd Favorite
 Author URI: http://crowdfavorite.com
 */
@@ -103,11 +103,13 @@ function cffp_request_handler() {
 	$cffp_areas = apply_filters('cffp_add_areas',$cffp_areas);
 	
 	if (isset($_REQUEST['cffp'])) {
-		$post_id = $_REQUEST['post_ID'];
+		$post_id = intval($_REQUEST['post_ID']);
 		$img = $_REQUEST['cffp'];
 		foreach ($img as $key => $id) {
-			delete_post_meta($post_id,$key);
-			update_post_meta($post_id,$key,$id);
+			delete_post_meta($post_id, $key);
+			if (!empty($id) && $id != 'NULL') {
+				update_post_meta($post_id, $key, $id);
+			}
 		}
 	}
 	if (isset($_GET['cf_action'])) {
