@@ -592,7 +592,7 @@ function cffp_get_img_attachments_selected($cffp_att_id, $cffp_id, $type) {
  */
 function cffp_get_attachment_image_src($args) {
 	$default_args = array(
-		$area => false,
+		$area => false, // required
 		$size => 'thumbnail',
 		$post_id => false
 	);
