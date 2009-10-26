@@ -586,6 +586,34 @@ function cffp_get_img_attachments_selected($cffp_att_id, $cffp_id, $type) {
  * 
  */
 
+/**
+ * Get the attachment src array for the featured image.
+ * @return array | null
+ */
+function cffp_get_attachment_image_src($args) {
+	$default_args = array(
+		$area => false,
+		$size => 'thumbnail',
+		$post_id => false
+	);
+	
+	$args = wp_parse_args($args, $default_args);
+	
+	extract($args);
+	
+	// If we have not specified post id, then use the current post
+	if (!$post_id) {
+		global $post;
+		$post_id = $post->ID;
+	}
+
+	if ($area) {
+		$image = wp_get_attachment_image_src(get_post_meta($post_id, '_cffp-'.$area, true), $size);
+		return $image;
+	}
+	return null;
+}
+
 function cffp_display($area = '') {
 	global $post;
 	if ($area != '') {
