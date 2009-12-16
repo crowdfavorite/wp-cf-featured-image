@@ -387,6 +387,7 @@ function cffp_edit_post($post,$area) {
 	</div>
 	<div class="cffp_clear"></div>
 	');
+	do_action('cffp_edit_post',$cffp_id, $area_info);
 }
 
 function cffp_get_images($area, $att_id, $type = 'all', $post_id, $last_selected) {
