@@ -73,35 +73,11 @@ if (!defined('PLUGINDIR')) {
 
 /**
  * 
- * Filterable Mime Types array
- * 
- **/
-
-$cffp_mime_types = array(
-	'images' => array(
-		'png' => 'image/png',
-		'jpeg' => 'image/jpeg',
-		'jpg' => 'image/jpg',
-		'gif' => 'image/gif',
-	),
-	'other' => array(
-		'pdf' => 'application/pdf',
-		'zip' => 'application/octet-stream',
-	),
-);
-
-
-/**
- * 
  * Featured Image - Init Functions
  * 
  */
 
 function cffp_request_handler() {
-	global $cffp_mime_types,$cffp_areas;
-	$cffp_mime_types = apply_filters('cffp_mime_types', $cffp_mime_types);
-	$cffp_areas = apply_filters('cffp_add_areas',$cffp_areas);
-	
 	if (isset($_REQUEST['cffp'])) {
 		$post_id = intval($_REQUEST['post_ID']);
 		$img = $_REQUEST['cffp'];
@@ -131,8 +107,74 @@ function cffp_request_handler() {
 				die();
 		}
 	}
+	
+	// Add the post actions, if we need to
+	if (apply_filters('cffp_meta_actions', false)) {
+		add_action('admin_head','cffp_admin_head');
+	}
 }
 add_action('init', 'cffp_request_handler');
+
+function cffp_meta_default_actions($val) {
+	return (is_admin() && cffp_get_type() !== false);
+}
+add_filter('cffp_meta_actions', 'cffp_meta_default_actions', 1);
+
+function cffp_get_type() {
+	global $post, $pagenow;
+	
+	// We aren't going to do anything with this outside of the admin
+	if (!is_admin()) { return false; }
+	
+	if (empty($post) || is_null($post)) {
+		if (!empty($_GET['post']) && $_GET['post'] != 0) {
+			return get_post_type(intval($_GET['post']));
+		}
+		else if (!empty($_GET['post_type'])) {
+			return htmlentities($_GET['post_type']);
+		}
+		else if (!empty($_POST['post_id']) || !empty($_POST['post_ID'])) {
+			$post_id = get_post_type(intval($_POST['post_id']));
+			if (empty($post_id)) {
+				$post_id = get_post_type(intval($_POST['post_ID']));
+			}
+			return $post_id;
+		}
+		else if (empty($_GET['post_type']) && !empty($pagenow) && $pagenow == 'post-new.php') {
+			return 'post';
+		}
+		else if (empty($_GET['post_type']) && !empty($pagenow) && $pagenow == 'page-new.php') {
+			// For WordPress 2.9- Compatability
+			return 'page';
+		}
+	}
+	else {
+		if (!empty($post->post_type) && $post->post_type != 'revision') {
+			return $post->post_type;
+		}
+	}
+	return false;
+}
+
+function cffp_get_areas() {
+	return apply_filters('cffp_add_areas',array());
+}
+
+function cffp_get_mime_types() {
+	$cffp_mime_types = array(
+		'images' => array(
+			'png' => 'image/png',
+			'jpeg' => 'image/jpeg',
+			'jpg' => 'image/jpg',
+			'gif' => 'image/gif',
+		),
+		'other' => array(
+			'pdf' => 'application/pdf',
+			'zip' => 'application/octet-stream',
+		),
+	);
+	return apply_filters('cffp_mime_types', $cffp_mime_types);
+}
 
 /**
  * 
@@ -277,36 +319,23 @@ function cffp_admin_js() {
 }
 
 function cffp_admin_head() {
-	global $cffp_areas;
-
-	if (is_array($cffp_areas) && !empty($cffp_areas)) {
+	$areas = cffp_get_areas();
+	if (is_array($areas) && !empty($areas)) {
 		echo '<link rel="stylesheet" type="text/css" href="'.trailingslashit(get_bloginfo('url')).'index.php?cf_action=cffp_admin_css" />';
 		echo '<script type="text/javascript" src="'.trailingslashit(get_bloginfo('wpurl')).'index.php?cf_action=cffp_admin_js"></script>';	
 
-		foreach ($cffp_areas as $key => $area) {
+		foreach ($areas as $key => $area) {
 			$area_id = sanitize_title('cffp-'.$key);
 			if (!is_array($area['attach_to'])) {
 				$area['attach_to'] = array('post');
 			}
 			foreach ($area['attach_to'] as $here) {
-				add_meta_box($area_id, htmlspecialchars($area['name']), 'cffp_edit_post', $here, 'normal', 'high');
+				if ($here == cffp_get_type()) {
+					add_meta_box($area_id, htmlspecialchars($area['name']), 'cffp_edit_post', $here, 'normal', 'high');
+				}
 			}		
 		}
 	}
-}
-
-// Grab the current page file
-global $pagenow;
-// An array for checking to see if the content should be added
-$cffp_addition = array(
-	'post-new.php',
-	'page-new.php',
-	'post.php',
-	'page.php'
-);
-// Checking to see if the current page is in our addition array
-if (in_array($pagenow, $cffp_addition)) {
-	add_action('admin_head','cffp_admin_head');
 }
 
 /**
@@ -316,7 +345,8 @@ if (in_array($pagenow, $cffp_addition)) {
  */
 
 function cffp_edit_post($post,$area) {
-	global $wpdb, $cffp_areas;
+	global $wpdb;
+	$cffp_areas = cffp_get_areas();
 	
 	$post_imgs = '';
 	$area_info = $cffp_areas[str_replace('cffp-','',$area['id'])];
@@ -405,7 +435,7 @@ function cffp_edit_post($post,$area) {
 }
 
 function cffp_get_images($area, $att_id, $type = 'all', $post_id, $last_selected) {
-	global $cffp_areas;
+	$cffp_areas = cffp_get_areas();
 	
 	$area_info = $cffp_areas[str_replace('_cffp-','',$area)];
 	
@@ -436,7 +466,8 @@ function cffp_get_images($area, $att_id, $type = 'all', $post_id, $last_selected
 }
 
 function cffp_get_img_attachments($id_string, $cffp_att_id, $cffp_id, $type, $mime_types = array(), $last_selected = 0) {
-	global $wpdb,$cffp_mime_types;
+	global $wpdb;
+	$cffp_mime_types = cffp_get_mime_types();
 	$return = '';
 	$parent = '';
 	$mime_query = '';
@@ -455,14 +486,14 @@ function cffp_get_img_attachments($id_string, $cffp_att_id, $cffp_id, $type, $mi
 				$query_mime_type = $cffp_mime_types['other'][$mime];
 			}
 			if ($mime_query == '') {
-				$mime_query .= ' post_mime_type LIKE "'.$cffp_mime_types['other'][$mime].'"';
+				$mime_query .= ' post_mime_type LIKE "'.$query_mime_type.'"';
 			}
 			else {
-				$mime_query .= ' OR post_mime_type LIKE "'.$cffp_mime_types['other'][$mime].'"';
+				$mime_query .= ' OR post_mime_type LIKE "'.$query_mime_type.'"';
 			}
 		}
 	}
-	else {
+	else if (is_array($cffp_mime_types['images']) && !empty($cffp_mime_types['images'])) {
 		foreach ($cffp_mime_types['images'] as $cffp_key => $cffp_mime) {
 			if ($mime_query == '') {
 				$mime_query .= ' post_mime_type LIKE "'.$cffp_mime.'"';
@@ -508,7 +539,7 @@ function cffp_get_img_attachments($id_string, $cffp_att_id, $cffp_id, $type, $mi
 		$count++;
 		$selected_img .= cffp_get_img_attachments_selected($cffp_att_id, $cffp_id, $type);
 	}
-	
+
 	$cffp_attachments = $wpdb->get_results($wpdb->prepare("SELECT * FROM $wpdb->posts WHERE post_type LIKE 'attachment' $parent AND post_mime_type NOT LIKE '' AND($mime_query) ORDER BY post_title ASC"), ARRAY_A);
 	if (count($cffp_attachments)) {
 		$count = $count+count($cffp_attachments);
