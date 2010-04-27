@@ -19,3 +19,9 @@
 ## 1.5.1
 
 - Added prepare statements to fully escape 
+
+## 1.5.2
+
+- Fixed error where Featured Image didn't pull files from the WP3 Media Library or images attached to posts in WordPress 3.0
+- Tested successfully on WordPress 3.0
+
