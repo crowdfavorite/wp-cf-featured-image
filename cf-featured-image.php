@@ -3,46 +3,28 @@
 Plugin Name: CF Featured Image
 Plugin URI: http://crowdfavorite.com 
 Description: This plugin adds a field to the post page to select a thumbnail image to be added to the feature image area of the main page. 
-Version: 1.5.2
+Version: 1.6
 Author: Crowd Favorite
 Author URI: http://crowdfavorite.com
 */
 
 // 	ini_set('display_errors', '1'); ini_set('error_reporting', E_ALL);
 
+// Constants
+
+define('CFFP_VERSION', '1.6');
+define('CFFP_DIR', plugin_dir_path(__FILE__));
+//plugin_dir_url seems to be broken for including in theme files
+if (file_exists(trailingslashit(get_template_directory()).'plugins/'.basename(dirname(__FILE__)))) {
+	define('CFFP_DIR_URL', trailingslashit(trailingslashit(get_bloginfo('template_url')).'plugins/'.basename(dirname(__FILE__))));
+}
+else {
+	define('CFFP_DIR_URL', trailingslashit(plugins_url(basename(dirname(__FILE__)))));	
+}
 if (!defined('PLUGINDIR')) {
 	define('PLUGINDIR','wp-content/plugins');
 }
 
-
-// README HANDLING
-	add_action('admin_init','cffp_add_readme');
-
-	/**
-	 * Enqueue the readme function
-	 */
-	function cffp_add_readme() {
-		if(function_exists('cfreadme_enqueue')) {
-			cfreadme_enqueue('cf-featured-image','cffp_readme');
-		}
-	}
-	
-	/**
-	 * return the contents of the links readme file
-	 * replace the image urls with full paths to this plugin install
-	 *
-	 * @return string
-	 */
-	function cffp_readme() {
-		$file = realpath(dirname(__FILE__)).'/README.txt';
-		if(is_file($file) && is_readable($file)) {
-			$markdown = file_get_contents($file);
-			$markdown = preg_replace('|!\[(.*?)\]\((.*?)\)|','![$1]('.WP_PLUGIN_URL.'/cf-featured-image/$2)',$markdown);
-			return $markdown;
-		}
-		return null;
-	}
-		
 /**
  * 
  * Format for areas array
@@ -76,19 +58,8 @@ if (!defined('PLUGINDIR')) {
  * Featured Image - Init Functions
  * 
  */
-
-function cffp_request_handler() {
-	if (isset($_REQUEST['cffp'])) {
-		$post_id = intval($_REQUEST['post_ID']);
-		$img = $_REQUEST['cffp'];
-		foreach ($img as $key => $id) {
-			delete_post_meta($post_id, $key);
-			if (!empty($id) && $id != 'NULL') {
-				update_post_meta($post_id, $key, $id);
-			}
-		}
-	}
-	if (isset($_GET['cf_action'])) {
+function cffp_resources_handler() {
+	if (!empty($_GET['cf_action'])) {
 		switch ($_GET['cf_action']) {
 			case 'cffp_admin_css':
 				cffp_admin_css();
@@ -98,11 +69,28 @@ function cffp_request_handler() {
 				break;
 		}
 	}
-	if (isset($_POST['cf_action'])) {
+}
+add_action('init', 'cffp_resources_handler', 1);
+
+function cffp_request_handler() {
+	if (!empty($_REQUEST['cffp'])) {
+		$post_id = intval($_REQUEST['post_ID']);
+		$img = $_REQUEST['cffp'];
+		
+		if (is_array($img)) {
+			foreach ($img as $key => $id) {
+				delete_post_meta($post_id, $key);
+				if (!empty($id) && $id != 'NULL') {
+					update_post_meta($post_id, $key, $id);
+				}
+			}
+		}
+	}
+	if (!empty($_POST['cf_action'])) {
 		switch ($_POST['cf_action']) {
 			case 'cffp_get_images':
 				if (isset($_POST['cffp_area']) && $_POST['cffp_area'] != '' && isset($_POST['cffp_att_id']) && $_POST['cffp_att_id'] != '' && isset($_POST['cffp_type']) && $_POST['cffp_type'] != '' && isset($_POST['cffp_post_id']) && $_POST['cffp_post_id'] != '') {
-					cffp_get_images($_POST['cffp_area'], $_POST['cffp_att_id'], $_POST['cffp_type'], $_POST['cffp_post_id'],$_POST['cffp_last_selected']);
+					cffp_get_images($_POST['cffp_area'], $_POST['cffp_att_id'], $_POST['cffp_type'], $_POST['cffp_post_id'], $_POST['cffp_last_selected'], $_POST['cffp_offset']);
 				}
 				die();
 		}
@@ -111,6 +99,8 @@ function cffp_request_handler() {
 	// Add the post actions, if we need to
 	if (apply_filters('cffp_meta_actions', false)) {
 		add_action('admin_head','cffp_admin_head');
+		wp_enqueue_script('cffp-admin', site_url('?cf_action=cffp_admin_js'), array('jquery'), CFFP_VERSION);
+		wp_enqueue_style('cffp-admin', site_url('?cf_action=cffp_admin_css'), array(), CFFP_VERSION, 'screen');
 	}
 }
 add_action('init', 'cffp_request_handler');
@@ -184,146 +174,21 @@ function cffp_get_mime_types() {
 
 function cffp_admin_css() {
 	header('Content-type: text/css');
-	?>
-	.cffp_overall {
-		height:218px;
-		overflow:auto;
-	}
-	.cffp_container {
-		text-align: center; 
-		width: 160px; 
-		float: left;
-	}
-	#cffp_ajax_spinner {
-		width:160px;
-		line-height:160px;
-		float:left;
-		text-align:center;
-		vertical-align:middle;
-	}
-	.cffp_help {
-	}
-	.cffp_help a {
-		cursor:pointer;
-		padding: 0 10px;
-	}
-	.cffp_type_active {
-		background-color:#21759B;
-		color:#FFFFFF;
-	}
-	.cffp_selected {
-		background-color: #D3D5DB;
-		-moz-border-radius-topleft:5px;
-		-khtml-border-top-left-radius:5px;
-		-webkit-border-top-left-radius:5px;
-		border-top-left-radius:5px;
-		-moz-border-radius-topright: 5px;
-		-khtml-border-top-right-radius: 5px;
-		-webkit-border-top-right-radius: 5px;
-		border-top-right-radius: 5px;
-		-moz-border-radius-bottomleft: 5px;
-		-khtml-border-bottom-left-radius:5px;
-		-webkit-border-bottom-left-radius:5px;
-		border-bottom-left-radius:5px;
-		-moz-border-radius-bottomright: 5px;
-		-khtml-border-bottom-right-radius: 5px;
-		-webkit-border-bottom-right-radius: 5px;
-		border-bottom-right-radius: 5px;
-	}
-	.cffp_img {
-		display:block;
-		height: 150px;
-		line-height: 150px;
-		padding: 5px;
-		overflow: hidden;
-	}
-	.cffp_radio {
-		padding: 10px 0 0;
-		margin:4px;
-	}
-	.cffp_clear {
-		float:none;
-		clear:both;
-	}
-	<?php
+	do_action('cffp-admin-css');
+	echo file_get_contents(CFFP_DIR.'css/post-edit.css');
 	die();
 }
 
 function cffp_admin_js() {
-	$url = trailingslashit(get_bloginfo('url'));
-	if (FORCE_SSL_ADMIN) {
-		$url = str_replace('http','https',$url);
-	}
 	header('Content-type: text/javascript');
-	?>
-	function cffp_getImgs(area, att_id, type, postID) {
-		var imgs_area = jQuery('#cffp_'+type+'_imgs_'+area);
-
-		jQuery('#cffp_all_imgs_'+area+'_wrapper').hide();
-		jQuery('#cffp_other_imgs_'+area+'_wrapper').hide();
-		jQuery('#cffp_post_imgs_'+area+'_wrapper').hide();
-		jQuery('#cffp_ajax_spinner_'+area+'_wrapper').fadeIn();
-		
-		var select_val = jQuery('#'+type+'-click-'+area).attr('cffp_last_checked');
-		
-		jQuery.post('<?php echo $url; ?>', {
-			cf_action: 'cffp_get_images',
-			cffp_area: area,
-			cffp_att_id: att_id,
-			cffp_post_id: postID,
-			cffp_last_selected: select_val,
-			cffp_type: type
-		},function(data){
-			data = jQuery(data);
-			jQuery('input[type="radio"]', data).each(function() {
-				jQuery(this).change(function(){
-					var type = jQuery(this).attr('cffp_type');
-					var area = jQuery(this).parent().parent().parent().attr('id');
-					
-					area = area.replace('cffp_'+type+'_imgs__','');
-					cffp_last_checked(type, area);
-				});
-			});
-			
-			jQuery('#cffp_ajax_spinner_'+area+'_wrapper').hide();
-			imgs_area.replaceWith(data);
-			jQuery('#cffp_'+type+'_imgs_'+area+'_wrapper').fadeIn();
-
-			if (type != 'all') {
-				jQuery('#other-click-'+area).attr('class','');
-				jQuery('#post-click-'+area).attr('class','');
-			}
-			if (type != 'other') {
-				jQuery('#all-click-'+area).attr('class','');
-				jQuery('#post-click-'+area).attr('class','');
-			}
-			if (type != 'post') {
-				jQuery('#all-click-'+area).attr('class','');
-				jQuery('#other-click-'+area).attr('class','');
-			}
-			jQuery('#'+type+'-click-'+area).attr('class','cffp_type_active');
-		});
-	}
-	function cffp_last_checked(type, area) {
-		var last_val = jQuery('#'+area+' .cffp_overall input[type="radio"]:checked').val();
-		if (last_val == null) {
-			last_val = 0;
-		}
-		jQuery('#'+type+'-click-_'+area).attr('cffp_last_checked',last_val);
-	}
-	function cffp_help_text(area) {
-		jQuery('#cffp_help_text_'+area).slideToggle();
-	}
-	<?php
+	do_action('cffp-admin-js');
+	echo file_get_contents(CFFP_DIR.'js/post-edit.js');
 	die();
 }
 
 function cffp_admin_head() {
 	$areas = cffp_get_areas();
 	if (is_array($areas) && !empty($areas)) {
-		echo '<link rel="stylesheet" type="text/css" href="'.trailingslashit(get_bloginfo('url')).'index.php?cf_action=cffp_admin_css" />';
-		echo '<script type="text/javascript" src="'.trailingslashit(get_bloginfo('wpurl')).'index.php?cf_action=cffp_admin_js"></script>';	
-
 		foreach ($areas as $key => $area) {
 			$area_id = sanitize_title('cffp-'.$key);
 			if (!is_array($area['attach_to'])) {
@@ -396,7 +261,7 @@ function cffp_edit_post($post,$area) {
 	<div class="cffp_help">
 		<p>'.$cffp_description.' <a onclick="cffp_help_text(\''.$cffp_id.'\')"><em>Help</em></a></p>
 		<p id="cffp_help_text_'.$cffp_id.'" style="display:none;"><em>'.__('To add new files, upload them via the Media Gallery. Once files have been uploaded, click the Post Files button to refresh.').'</em></p>
-		<p><a id="post-click-'.$cffp_id.'" onclick="cffp_getImgs(\''.$cffp_id.'\',\''.$cffp_att_id.'\',\'post\',\''.$post->ID.'\')" class="cffp_type_active" cffp_class="post-click" cffp_last_checked="'.$cffp_att_id.'">Post Files</a><a id="other-click-'.$cffp_id.'" onclick="cffp_getImgs(\''.$cffp_id.'\',\''.$cffp_att_id.'\',\'other\',\''.$post->ID.'\')" cffp_class="other-click" cffp_last_checked="'.$cffp_att_id.'">Unattached Files</a><a id="all-click-'.$cffp_id.'" onclick="cffp_getImgs(\''.$cffp_id.'\',\''.$cffp_att_id.'\',\'all\',\''.$post->ID.'\')" cffp_class="all-click" cffp_last_checked="'.$cffp_att_id.'">All Files</a></p>
+		<p><a id="post-click-'.$cffp_id.'" onclick="cffp_getImgs(\''.$cffp_id.'\',\''.$cffp_att_id.'\',\'post\',\''.$post->ID.'\', \'0\')" class="cffp_type_active" cffp_class="post-click" cffp_last_checked="'.$cffp_att_id.'">Post Files</a><a id="other-click-'.$cffp_id.'" onclick="cffp_getImgs(\''.$cffp_id.'\',\''.$cffp_att_id.'\',\'other\',\''.$post->ID.'\', \'0\')" cffp_class="other-click" cffp_last_checked="'.$cffp_att_id.'">Unattached Files</a><a id="all-click-'.$cffp_id.'" onclick="cffp_getImgs(\''.$cffp_id.'\',\''.$cffp_att_id.'\',\'all\',\''.$post->ID.'\', \'0\')" cffp_class="all-click" cffp_last_checked="'.$cffp_att_id.'">All Files</a></p>
 	</div>
 	<div class="cffp_overall">
 		<div id="cffp_ajax_spinner_'.$cffp_id.'_wrapper" style="display:none;">
@@ -430,42 +295,54 @@ function cffp_edit_post($post,$area) {
 			</div>
 		</div>
 	</div>
-	<div class="cffp_clear"></div>
+	<div class="clear"></div>
 	');
 }
 
-function cffp_get_images($area, $att_id, $type = 'all', $post_id, $last_selected) {
+function cffp_get_images($area, $att_id, $type = 'all', $post_id, $last_selected, $offset = 0) {
 	$cffp_areas = cffp_get_areas();
 	
 	$area_info = $cffp_areas[str_replace('_cffp-','',$area)];
 	
+	$imgs = array();
+	
 	if ($type == 'all') {
-		$imgs = cffp_get_img_attachments('', $att_id, $area, $type, $area_info['mime_types'], $last_selected);
+		$imgs = cffp_get_img_attachments('', $att_id, $area, $type, $area_info['mime_types'], $last_selected, $offset, $post_id);
 	}
 	if ($type == 'other') {
-		$imgs = cffp_get_img_attachments('<= 0', $att_id, $area, $type, $area_info['mime_types'], $last_selected);
+		$imgs = cffp_get_img_attachments('<= 0', $att_id, $area, $type, $area_info['mime_types'], $last_selected, $offset, $post_id);
 	}
 	if ($type == 'post') {
 		global $post;
-		$imgs = cffp_get_img_attachments('= '.$post_id, $att_id, $area, $type, $area_info['mime_types'], $last_selected);
+		$imgs = cffp_get_img_attachments('= '.$post_id, $att_id, $area, $type, $area_info['mime_types'], $last_selected, $offset, $post_id);
 	}
-	$container_width = ($imgs['count'] + 1) * 170;
-	print('
-		<div id="cffp_'.$type.'_imgs_'.$area.'" class="cffp_images" style="width:'.$container_width.'px;">
-			');
-			if (!empty($imgs['selected'])) {
-				echo $imgs['selected'];
-			}
-			if (!empty($imgs['html'])) {
-				echo $imgs['html'];
-			}
-			print('
-		</div>
-	');
+	
+	
+	if (is_array($imgs) && !empty($imgs)) {
+		$container_width = $imgs['count']*160;
+		if (!empty($imgs['extra'])) {
+			$container_width += 160;
+		}
+		print('
+			<div id="cffp_'.$type.'_imgs_'.$area.'" class="cffp_images" style="width:'.$container_width.'px;">
+				');
+				if (!empty($imgs['selected'])) {
+					echo $imgs['selected'];
+				}
+				if (!empty($imgs['html'])) {
+					echo $imgs['html'];
+				}
+				if (!empty($imgs['extra'])) {
+					echo $imgs['extra'];
+				}
+				print('
+			</div>
+		');
+	}
 	die();
 }
 
-function cffp_get_img_attachments($id_string, $cffp_att_id, $cffp_id, $type, $mime_types = array(), $last_selected = 0) {
+function cffp_get_img_attachments($id_string, $cffp_att_id, $cffp_id, $type, $mime_types = array(), $last_selected = 0, $offset = 0, $post_id = 0) {
 	global $wpdb;
 	$cffp_mime_types = cffp_get_mime_types();
 	$return = '';
@@ -509,6 +386,7 @@ function cffp_get_img_attachments($id_string, $cffp_att_id, $cffp_id, $type, $mi
 	// Setup the vars
 	$all_img = '';
 	$no_img = '';
+	$extra_img = '';
 	$selected_img = '';
 	
 	// Lets deal with the No Image area
@@ -539,10 +417,30 @@ function cffp_get_img_attachments($id_string, $cffp_att_id, $cffp_id, $type, $mi
 		$count++;
 		$selected_img .= cffp_get_img_attachments_selected($cffp_att_id, $cffp_id, $type);
 	}
+	
+	$offset_text = '';
+	if (!$offset) {
+		$offset_text = ' LIMIT 0, 50';
+	}
+	else {
+		$offset_text = ' LIMIT '.$offset.', 50';
+	}
+	
+	$cffp_attachments = $wpdb->get_results($wpdb->prepare("SELECT * FROM $wpdb->posts WHERE post_type LIKE 'attachment' $parent AND post_mime_type NOT LIKE '' AND($mime_query) ORDER BY post_title ASC $offset_text"), ARRAY_A);
+	$cffp_total_count = $wpdb->get_results($wpdb->prepare("SELECT count(ID) as total FROM $wpdb->posts WHERE post_type LIKE 'attachment' $parent AND post_mime_type NOT LIKE '' AND($mime_query) ORDER BY post_title ASC"), ARRAY_A);
 
-	$cffp_attachments = $wpdb->get_results($wpdb->prepare("SELECT * FROM $wpdb->posts WHERE post_type LIKE 'attachment' $parent AND post_mime_type NOT LIKE '' AND($mime_query) ORDER BY post_title ASC"), ARRAY_A);
 	if (count($cffp_attachments)) {
 		$count = $count+count($cffp_attachments);
+		
+		if (($count+$offset) < $cffp_total_count[0]['total']) {
+			$offset += 50;
+			$extra_img = '
+				<div class="cffp_container cffp_container_more">
+					<a class="cffp_more_img" href="#" onclick="cffp_getImgs(\''.$cffp_id.'\',\''.$cffp_att_id.'\',\''.$type.'\',\''.$post_id.'\', \''.$offset.'\'); return false;">'.__('View More', 'cffp').'</a>
+					<input type="hidden" id="cffp_offset" value="'.$offset.'" />
+				</div>
+			';
+		}
 		
 		foreach ($cffp_attachments as $cffp_attachment) {
 			$image_link = wp_get_attachment_image_src($cffp_attachment['ID']);
@@ -556,10 +454,10 @@ function cffp_get_img_attachments($id_string, $cffp_att_id, $cffp_id, $type, $mi
 				}
 				
 				if ($cffp_attachment['post_mime_type'] == 'application/octet-stream') {
-					$label = '<label class="cffp_img" style="background: transparent url('.trailingslashit(get_bloginfo('wpurl')).'/wp-content/plugins/cf-featured-image/images/zip.png) no-repeat scroll center top; width: 150px; height: 12px; line-height:1; padding:148px 0 0 10px;" for="cffp-'.$cffp_id.'-'.$type.'-leadimg-'.$cffp_attachment['ID'].'">'.$cffp_attachment['post_title'].'</label>';
+					$label = '<label class="cffp_img" style="background: transparent url('.CFFP_DIR_URL.'images/zip.png) no-repeat scroll center top; width: 150px; height: 12px; line-height:1; padding:148px 0 0 10px;" for="cffp-'.$cffp_id.'-'.$type.'-leadimg-'.$cffp_attachment['ID'].'">'.$cffp_attachment['post_title'].'</label>';
 				}
 				else if ($cffp_attachment['post_mime_type'] == 'application/pdf') {
-					$label = '<label class="cffp_img" style="background: transparent url('.trailingslashit(get_bloginfo('wpurl')).'/wp-content/plugins/cf-featured-image/images/pdf.png) no-repeat scroll center top; width: 150px; height: 12px; line-height:1; padding:148px 0 0 10px;" for="cffp-'.$cffp_id.'-'.$type.'-leadimg-'.$cffp_attachment['ID'].'">'.$cffp_attachment['post_title'].'</label>';
+					$label = '<label class="cffp_img" style="background: transparent url('.CFFP_DIR_URL.'images/pdf.png) no-repeat scroll center top; width: 150px; height: 12px; line-height:1; padding:148px 0 0 10px;" for="cffp-'.$cffp_id.'-'.$type.'-leadimg-'.$cffp_attachment['ID'].'">'.$cffp_attachment['post_title'].'</label>';
 				}
 				else {
 					$label = '<label class="cffp_img" style="background: transparent url('.$image_link[0].') no-repeat scroll center center; width: 150px; height: 150px;" for="cffp-'.$cffp_id.'-'.$type.'-leadimg-'.$cffp_attachment['ID'].'"></label>';
@@ -576,7 +474,7 @@ function cffp_get_img_attachments($id_string, $cffp_att_id, $cffp_id, $type, $mi
 		}
 	}
 	$return = $no_img.$selected_img.$all_img;
-	return array('html' => $return, 'count' => $count);
+	return array('html' => $return, 'count' => $count, 'extra' => $extra_img);
 }
 
 function cffp_get_img_attachments_selected($cffp_att_id, $cffp_id, $type) {
@@ -590,10 +488,10 @@ function cffp_get_img_attachments_selected($cffp_att_id, $cffp_id, $type) {
 		
 		$label = '';
 		if ($selected->post_mime_type == 'application/octet-stream') {
-			$label = '<label class="cffp_img" style="background: transparent url('.trailingslashit(get_bloginfo('wpurl')).'/wp-content/plugins/cf-featured-image/images/zip.png) no-repeat scroll center top; width: 150px; height: 12px; line-height:1; padding:148px 0 0 10px;" for="cffp-'.$cffp_id.'-'.$type.'-leadimg-'.$selected->ID.'">'.$selected->post_title.'</label>';
+			$label = '<label class="cffp_img" style="background: transparent url('.CFFP_DIR_URL.'images/zip.png) no-repeat scroll center top; width: 150px; height: 12px; line-height:1; padding:148px 0 0 10px;" for="cffp-'.$cffp_id.'-'.$type.'-leadimg-'.$selected->ID.'">'.$selected->post_title.'</label>';
 		}
 		else if ($selected->post_mime_type == 'application/pdf') {
-			$label = '<label class="cffp_img" style="background: transparent url('.trailingslashit(get_bloginfo('wpurl')).'/wp-content/plugins/cf-featured-image/images/pdf.png) no-repeat scroll center top; width: 150px; height: 12px; line-height:1; padding:148px 0 0 10px;" for="cffp-'.$cffp_id.'-'.$type.'-leadimg-'.$selected->ID.'">'.$selected->post_title.'</label>';
+			$label = '<label class="cffp_img" style="background: transparent url('.CFFP_DIR_URL.'images/pdf.png) no-repeat scroll center top; width: 150px; height: 12px; line-height:1; padding:148px 0 0 10px;" for="cffp-'.$cffp_id.'-'.$type.'-leadimg-'.$selected->ID.'">'.$selected->post_title.'</label>';
 		}
 		else {
 			$label = '<label class="cffp_img" style="background: transparent url('.$image_link[0].') no-repeat scroll center center; width: 150px; height: 150px;" for="cffp-'.$cffp_id.'-'.$type.'-leadimg-'.$selected->ID.'"></label>';
@@ -733,5 +631,33 @@ function cffp_attachment_link($area, $link_text = '', $post_id = 0) {
 	echo cffp_get_attachment_link($area, $post_id, $link_text);
 }
 
+
+// README HANDLING
+
+/**
+ * Enqueue the readme function
+ */
+function cffp_add_readme() {
+	if(function_exists('cfreadme_enqueue')) {
+		cfreadme_enqueue('cf-featured-image','cffp_readme');
+	}
+}
+add_action('admin_init','cffp_add_readme');
+
+/**
+ * return the contents of the links readme file
+ * replace the image urls with full paths to this plugin install
+ *
+ * @return string
+ */
+function cffp_readme() {
+	$file = realpath(dirname(__FILE__)).'/README.txt';
+	if(is_file($file) && is_readable($file)) {
+		$markdown = file_get_contents($file);
+		$markdown = preg_replace('|!\[(.*?)\]\((.*?)\)|','![$1]('.WP_PLUGIN_URL.'/cf-featured-image/$2)',$markdown);
+		return $markdown;
+	}
+	return null;
+}
 
 ?>

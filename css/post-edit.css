@@ -1,0 +1,53 @@
+.cffp_overall {
+	height: 218px;
+	overflow: auto;
+}
+
+.cffp_container {
+	text-align: center; 
+	width: 160px; 
+	float: left;
+}
+
+#cffp_ajax_spinner {
+	width: 160px;
+	line-height: 160px;
+	float: left;
+	text-align: center;
+	vertical-align: middle;
+}
+
+.cffp_help a {
+	cursor: pointer;
+	padding: 0 10px;
+}
+
+.cffp_type_active {
+	background-color: #21759B;
+	color: #FFFFFF;
+}
+
+.cffp_selected {
+	background-color: #D3D5DB;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	-khtml-border-radius: 5px;
+	border-radius: 5px;	
+}
+
+.cffp_img {
+	display: block;
+	height: 150px;
+	line-height: 150px;
+	padding: 5px;
+	overflow: hidden;
+}
+
+.cffp_radio {
+	padding: 10px 0 0;
+	margin: 4px;
+}
+
+.cffp_container_more {
+	margin: 65px 0 0;
+}

@@ -1,5 +1,11 @@
 # CF Featured Image Changelog
 
+## 1.6
+
+- Moved CSS/JS to external files
+- Cleaned up Resources/Request Handlers
+- Added a limit to the number of Images to display at once. Also a "View More" link to view more
+
 ## 1.4.4
 
 - Changed the ALT tag on the function 'cffp_get_img_tag' so it displays the Post title (image name)
