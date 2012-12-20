@@ -3,7 +3,7 @@
 Plugin Name: CF Featured Image
 Plugin URI: http://crowdfavorite.com 
 Description: This plugin adds a field to the post page to select a thumbnail image to be added to the feature image area of the main page. 
-Version: 1.6
+Version: 1.6.1
 Author: Crowd Favorite
 Author URI: http://crowdfavorite.com
 */
@@ -12,7 +12,7 @@ Author URI: http://crowdfavorite.com
 
 // Constants
 
-define('CFFP_VERSION', '1.6');
+define('CFFP_VERSION', '1.6.1');
 define('CFFP_DIR', plugin_dir_path(__FILE__));
 //plugin_dir_url seems to be broken for including in theme files
 if (file_exists(trailingslashit(get_template_directory()).'plugins/'.basename(dirname(__FILE__)))) {
