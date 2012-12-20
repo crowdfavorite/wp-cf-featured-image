@@ -426,8 +426,8 @@ function cffp_get_img_attachments($id_string, $cffp_att_id, $cffp_id, $type, $mi
 		$offset_text = ' LIMIT '.$offset.', 50';
 	}
 	
-	$cffp_attachments = $wpdb->get_results($wpdb->prepare("SELECT * FROM $wpdb->posts WHERE post_type LIKE 'attachment' $parent AND post_mime_type NOT LIKE '' AND($mime_query) ORDER BY post_title ASC $offset_text"), ARRAY_A);
-	$cffp_total_count = $wpdb->get_results($wpdb->prepare("SELECT count(ID) as total FROM $wpdb->posts WHERE post_type LIKE 'attachment' $parent AND post_mime_type NOT LIKE '' AND($mime_query) ORDER BY post_title ASC"), ARRAY_A);
+	$cffp_attachments = $wpdb->get_results("SELECT * FROM $wpdb->posts WHERE post_type LIKE 'attachment' $parent AND post_mime_type NOT LIKE '' AND($mime_query) ORDER BY post_title ASC $offset_text", ARRAY_A);
+	$cffp_total_count = $wpdb->get_results("SELECT count(ID) as total FROM $wpdb->posts WHERE post_type LIKE 'attachment' $parent AND post_mime_type NOT LIKE '' AND($mime_query) ORDER BY post_title ASC", ARRAY_A);
 
 	if (count($cffp_attachments)) {
 		$count = $count+count($cffp_attachments);
@@ -481,7 +481,7 @@ function cffp_get_img_attachments_selected($cffp_att_id, $cffp_id, $type) {
 	global $wpdb;
 	$return = '';
 	
-	$cffp_selected = $wpdb->get_results($wpdb->prepare("SELECT * FROM $wpdb->posts WHERE post_type LIKE 'attachment' AND ID = '$cffp_att_id' ORDER BY post_title ASC"));
+	$cffp_selected = $wpdb->get_results($wpdb->prepare("SELECT * FROM $wpdb->posts WHERE post_type LIKE 'attachment' AND ID = '%d' ORDER BY post_title ASC", $cffp_att_id));
 	foreach ($cffp_selected as $selected) {
 		$image_link = wp_get_attachment_image_src($selected->ID);
 		$image_meta = get_post_meta($selected->ID, '_wp_attachment_metadata', true);
