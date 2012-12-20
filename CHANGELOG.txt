@@ -1,5 +1,9 @@
 # CF Featured Image Changelog
 
+## 1.6.1
+
+- PHP notice fixing
+
 ## 1.6
 
 - Moved CSS/JS to external files
